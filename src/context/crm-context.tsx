@@ -1092,18 +1092,78 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = (userId: string, updates: Partial<UserProfile>) => {
+    const target = users.find((u) => u.id === userId);
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...updates } : u)));
     dbUpdateUser(userId, updates);
-    addAuditLog('User Updated', 'User Management', userId, `Updated user details for ${userId}`);
+
+    // Sync with matching employee record
+    setEmployees((prev) =>
+      prev.map((e) => {
+        if (
+          e.id === userId ||
+          (target && (e.email.toLowerCase() === target.email.toLowerCase() || e.name.toLowerCase() === target.name.toLowerCase()))
+        ) {
+          return {
+            ...e,
+            ...(updates.name ? { name: updates.name } : {}),
+            ...(updates.email ? { email: updates.email } : {}),
+            ...(updates.phone ? { phone: updates.phone } : {}),
+            ...(updates.designation ? { designation: updates.designation } : {}),
+            ...(updates.department ? { department: updates.department } : {}),
+            ...(updates.role ? { role: updates.role } : {}),
+            ...(updates.branch ? { branch: updates.branch } : {}),
+            ...(updates.status ? { status: updates.status === 'Active' ? 'Active' : 'Inactive' } : {})
+          };
+        }
+        return e;
+      })
+    );
+
+    // Sync with active session if updating self
+    if (userId === currentUser.id || (target && currentUser.email.toLowerCase() === target.email.toLowerCase())) {
+      setCurrentUser((prev) => ({
+        ...prev,
+        ...updates
+      }));
+    }
+
+    // Sync with Teams if user is a TL or team member
+    if (target && (updates.name || updates.role || updates.email || updates.phone)) {
+      setTeams((prev) =>
+        prev.map((t) => {
+          const isTL = t.teamLeadId === userId || t.teamLeadName.toLowerCase() === target.name.toLowerCase();
+          const updatedMembers = (t.members || []).map((m) => {
+            if (m.id === userId || m.name.toLowerCase() === target.name.toLowerCase()) {
+              return {
+                ...m,
+                name: updates.name || m.name,
+                role: updates.role === 'BDM' || updates.role === 'BDE' ? updates.role : m.role,
+                email: updates.email || m.email,
+                phone: updates.phone || m.phone
+              };
+            }
+            return m;
+          });
+
+          return {
+            ...t,
+            ...(isTL && updates.name ? { teamLeadName: updates.name } : {}),
+            members: updatedMembers
+          };
+        })
+      );
+    }
+
+    addAuditLog(
+      'User Updated',
+      'User Management',
+      userId,
+      `Updated user profile details for ${updates.name || target?.name || userId} by ${currentUser.name} (${currentUser.role})`
+    );
   };
 
   const updateUserRole = (userId: string, role: UserRole) => {
-    const target = users.find((u) => u.id === userId);
-    if (!target) return;
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
-    setEmployees((prev) => prev.map((e) => (e.id === userId || e.email === target.email ? { ...e, role } : e)));
-    dbUpdateUser(userId, { role });
-    addAuditLog('User Role Changed', 'User Management', userId, `Changed role of ${target.name} from ${target.role} to ${role}`);
+    updateUser(userId, { role });
   };
 
   const toggleUserStatus = (userId: string) => {

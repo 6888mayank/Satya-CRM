@@ -18,6 +18,7 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   password?: string;
   department: 'Sales' | 'HR' | 'Tech' | 'Operations' | 'Finance' | 'Executive';
   designation: string;

@@ -18,12 +18,18 @@ import {
   ShieldCheck,
   Key,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Edit2,
+  Phone,
+  Mail,
+  Building,
+  MapPin
 } from 'lucide-react';
 
 export default function UserManagementView() {
   const {
     users,
+    employees,
     currentUser,
     addUser,
     updateUserRole,
@@ -41,13 +47,25 @@ export default function UserManagementView() {
   const [isNewUserOpen, setIsNewUserOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
   const [newDepartment, setNewDepartment] = useState<UserProfile['department']>('Sales');
   const [newDesignation, setNewDesignation] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('BDE');
+  const [newBranch, setNewBranch] = useState<'ND1' | 'ND2'>('ND1');
   const [newPassword, setNewPassword] = useState('');
 
-  // Edit user / Change role modal
+  // Comprehensive Edit User state (Allows HR / CSO to edit any profile details)
   const [selectedUserForEdit, setSelectedUserForEdit] = useState<UserProfile | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editDesignation, setEditDesignation] = useState('');
+  const [editDepartment, setEditDepartment] = useState<UserProfile['department']>('Sales');
+  const [editRole, setEditRole] = useState<UserRole>('BDE');
+  const [editBranch, setEditBranch] = useState<'ND1' | 'ND2'>('ND1');
+  const [editStatus, setEditStatus] = useState<'Active' | 'Inactive'>('Active');
+  const [editPassword, setEditPassword] = useState('');
+  const [editSuccessMsg, setEditSuccessMsg] = useState(false);
 
   // Authorization check: Super Admin, RM, HR, and Tech can access
   const isAuthorized =
@@ -81,16 +99,58 @@ export default function UserManagementView() {
     return true;
   });
 
+  const openEditModal = (u: UserProfile) => {
+    setSelectedUserForEdit(u);
+    setEditName(u.name);
+    setEditEmail(u.email);
+    const matchingEmp = employees.find(
+      (e) => e.id === u.id || e.email.toLowerCase() === u.email.toLowerCase()
+    );
+    setEditPhone(u.phone || matchingEmp?.phone || '');
+    setEditDesignation(u.designation);
+    setEditDepartment(u.department);
+    setEditRole(u.role);
+    setEditBranch(u.branch === 'ND2' ? 'ND2' : 'ND1');
+    setEditStatus(u.status);
+    setEditPassword(u.password || '');
+    setEditSuccessMsg(false);
+  };
+
+  const handleSaveUserEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForEdit) return;
+
+    updateUser(selectedUserForEdit.id, {
+      name: editName.trim(),
+      email: editEmail.trim(),
+      phone: editPhone.trim(),
+      designation: editDesignation.trim(),
+      department: editDepartment,
+      role: editRole,
+      branch: editBranch,
+      status: editStatus,
+      ...(editPassword.trim() ? { password: editPassword.trim() } : {})
+    });
+
+    setEditSuccessMsg(true);
+    setTimeout(() => {
+      setSelectedUserForEdit(null);
+      setEditSuccessMsg(false);
+    }, 900);
+  };
+
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     addUser({
-      name: newName,
-      email: newEmail,
+      name: newName.trim(),
+      email: newEmail.trim(),
+      phone: newPhone.trim() || '+91 98000 00000',
       password: newPassword.trim() || 'satya@123',
       department: newDepartment,
-      designation: newDesignation || `${newDepartment} Specialist`,
+      designation: newDesignation.trim() || `${newDepartment} Specialist`,
       role: newRole,
       status: 'Active',
+      branch: newBranch,
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       permissions: ['sales.leads.view', 'sales.bookings.view']
     });
@@ -98,6 +158,7 @@ export default function UserManagementView() {
     setIsNewUserOpen(false);
     setNewName('');
     setNewEmail('');
+    setNewPhone('');
     setNewPassword('');
     setNewDesignation('');
   };
@@ -202,90 +263,110 @@ export default function UserManagementView() {
                 <thead className="border-b border-slate-100 bg-slate-50/70 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-800/40">
                   <tr>
                     <th className="py-3.5 px-4">Employee</th>
-                    <th className="py-3.5 px-3">Email Address</th>
-                    <th className="py-3.5 px-3">Department</th>
-                    <th className="py-3.5 px-3">Designation</th>
+                    <th className="py-3.5 px-3">Contact (Email & Mobile)</th>
+                    <th className="py-3.5 px-3 text-center">Branch</th>
+                    <th className="py-3.5 px-3">Department & Designation</th>
                     <th className="py-3.5 px-3">System Role</th>
                     <th className="py-3.5 px-3">Status</th>
                     <th className="py-3.5 px-3">Last Login</th>
-                    <th className="py-3.5 px-3">Created Date</th>
                     <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
-                  {filteredUsers.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                      <td className="py-3.5 px-4 flex items-center gap-2.5">
-                        <img src={u.avatar} alt={u.name} className="h-8 w-8 rounded-full object-cover" />
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white">{u.name}</p>
-                          <span className="text-[10px] text-slate-400 font-mono">{u.id}</span>
-                        </div>
-                      </td>
+                  {filteredUsers.map((u) => {
+                    const empPhone = u.phone || employees.find((e) => e.id === u.id || e.email.toLowerCase() === u.email.toLowerCase())?.phone;
+                    return (
+                      <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                        <td className="py-3.5 px-4 flex items-center gap-2.5">
+                          <img src={u.avatar} alt={u.name} className="h-8 w-8 rounded-full object-cover shrink-0" />
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white">{u.name}</p>
+                            <span className="text-[10px] text-slate-400 font-mono">{u.id}</span>
+                          </div>
+                        </td>
 
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">{u.email}</td>
-                      <td className="py-3.5 px-3 text-slate-600 dark:text-slate-300">{u.department}</td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-800 dark:text-slate-200">{u.designation}</td>
+                        <td className="py-3.5 px-3">
+                          <div className="flex flex-col">
+                            <span className="text-slate-800 dark:text-slate-200 font-medium">{u.email}</span>
+                            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                              <Phone className="h-2.5 w-2.5 text-indigo-500" />
+                              {empPhone || '+91 98000 00000'}
+                            </span>
+                          </div>
+                        </td>
 
-                      <td className="py-3.5 px-3">
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                            u.role === 'SUPER_ADMIN'
-                              ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
-                              : u.role === 'HR'
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                              : u.role === 'TECH'
-                              ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
-                              : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                          }`}
-                        >
-                          {u.role.replace('_', ' ')}
-                        </span>
-                      </td>
+                        <td className="py-3.5 px-3 text-center">
+                          <span className="rounded-md bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[11px] font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800">
+                            {u.branch || 'ND1'}
+                          </span>
+                        </td>
 
-                      <td className="py-3.5 px-3">
-                        <button
-                          onClick={() => toggleUserStatus(u.id)}
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition ${
-                            u.status === 'Active'
-                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                          }`}
-                          title="Click to toggle status"
-                        >
-                          {u.status}
-                        </button>
-                      </td>
+                        <td className="py-3.5 px-3">
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">{u.designation}</p>
+                          <span className="text-[10px] text-slate-400">{u.department}</span>
+                        </td>
 
-                      <td className="py-3.5 px-3 text-slate-500">{u.lastLogin}</td>
-                      <td className="py-3.5 px-3 text-slate-500">{u.createdDate}</td>
-
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => setSelectedUserForEdit(u)}
-                            className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-bold text-indigo-600 hover:bg-indigo-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                        <td className="py-3.5 px-3">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                              u.role === 'SUPER_ADMIN'
+                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                                : u.role === 'HR'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                : u.role === 'TECH'
+                                ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
+                                : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                            }`}
                           >
-                            Edit / Role
-                          </button>
+                            {u.role.replace('_', ' ')}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-3">
                           <button
-                            onClick={() => alert(`Password reset link dispatched to ${u.email}`)}
-                            title="Reset Access"
-                            className="rounded-lg border border-slate-200 p-1 text-slate-400 hover:text-slate-700 dark:border-slate-700"
+                            onClick={() => toggleUserStatus(u.id)}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition ${
+                              u.status === 'Active'
+                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                            }`}
+                            title="Click to toggle status"
                           >
-                            <RotateCcw className="h-3 w-3" />
+                            {u.status}
                           </button>
-                          <button
-                            onClick={() => setUserToDelete(u)}
-                            title={`Remove ${u.name} from CRM`}
-                            className="rounded-lg border border-rose-200 p-1 text-rose-500 hover:bg-rose-50 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/60 transition"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+
+                        <td className="py-3.5 px-3 text-slate-500 text-[11px]">{u.lastLogin || 'Recent'}</td>
+
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => openEditModal(u)}
+                              className="flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
+                              title="HR / CSO Edit: Name, Email, Mobile, Designation, Role, Branch & Password"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                              <span>Edit Profile</span>
+                            </button>
+                            <button
+                              onClick={() => alert(`Password reset link dispatched to ${u.email}`)}
+                              title="Quick Reset Password"
+                              className="rounded-lg border border-slate-200 p-1 text-slate-400 hover:text-slate-700 dark:border-slate-700"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => setUserToDelete(u)}
+                              title={`Remove ${u.name} from CRM`}
+                              className="rounded-lg border border-rose-200 p-1 text-rose-500 hover:bg-rose-50 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/60 transition"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -386,7 +467,7 @@ export default function UserManagementView() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-slate-700 dark:text-slate-300">Department</label>
                   <select
@@ -397,9 +478,35 @@ export default function UserManagementView() {
                     <option value="Sales">Sales</option>
                     <option value="HR">HR</option>
                     <option value="Tech">Tech</option>
+                    <option value="Executive">Executive</option>
                     <option value="Operations">Operations</option>
                     <option value="Finance">Finance</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300">Branch Location *</label>
+                  <select
+                    value={newBranch}
+                    onChange={(e) => setNewBranch(e.target.value as any)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    <option value="ND1">Branch ND1</option>
+                    <option value="ND2">Branch ND2</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300">Mobile Number *</label>
+                  <input
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+                  />
                 </div>
 
                 <div>
@@ -422,7 +529,7 @@ export default function UserManagementView() {
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 dark:text-slate-300">Designation</label>
+                <label className="font-semibold text-slate-700 dark:text-slate-300">Designation *</label>
                 <input
                   type="text"
                   placeholder="e.g. Loan Processing Specialist"
@@ -466,79 +573,187 @@ export default function UserManagementView() {
         </div>
       )}
 
-      {/* Edit User & Role Modal */}
+      {/* Comprehensive Edit User Modal (HR & CSO / Super Admin Full Authority) */}
       {selectedUserForEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                Modify Role: {selectedUserForEdit.name}
-              </h3>
-              <button onClick={() => setSelectedUserForEdit(null)} className="text-slate-400 hover:text-slate-600">
-                <X className="h-4 w-4" />
+              <div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                  <Edit2 className="h-4 w-4 text-indigo-600" />
+                  Edit Profile &amp; Role: {selectedUserForEdit.name}
+                </h3>
+                <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  Authorized Operator: {currentUser.name} ({currentUser.role === 'SUPER_ADMIN' ? 'CSO / Super Admin' : currentUser.role})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedUserForEdit(null)}
+                className="text-slate-400 hover:text-slate-600 rounded-lg p-1.5"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="mt-4 space-y-4 text-xs">
+            <form onSubmit={handleSaveUserEdit} className="mt-4 space-y-4 text-xs">
+              {/* Full Name & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">
+                    Full Name (Naam) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">
+                    Email Address (Mail ID) *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Number & Designation */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <Phone className="h-3.5 w-3.5 text-indigo-500" />
+                    Mobile Number (Phone) *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+91 98765 43210"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-mono font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">
+                    Designation *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editDesignation}
+                    onChange={(e) => setEditDesignation(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Department & Branch Location (ND1 / ND2) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Department</label>
+                  <select
+                    value={editDepartment}
+                    onChange={(e) => setEditDepartment(e.target.value as any)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  >
+                    <option value="Sales">Sales</option>
+                    <option value="HR">HR</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Executive">Executive</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Finance">Finance</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                    Branch Location *
+                  </label>
+                  <select
+                    value={editBranch}
+                    onChange={(e) => setEditBranch(e.target.value as any)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-black text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300"
+                  >
+                    <option value="ND1">Branch ND1</option>
+                    <option value="ND2">Branch ND2</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* System Role Selection */}
               <div>
-                <label className="font-semibold text-slate-700 dark:text-slate-300">Assign Role</label>
-                <div className="mt-2 space-y-2">
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Assign System Role
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {rolesList.map((r) => (
-                    <label
+                    <button
                       key={r}
-                      className={`flex items-center justify-between rounded-xl border p-3 cursor-pointer transition ${
-                        selectedUserForEdit.role === r
-                          ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300'
-                          : 'border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800'
+                      type="button"
+                      onClick={() => setEditRole(r)}
+                      className={`flex items-center justify-between rounded-xl border p-2.5 text-left text-xs transition cursor-pointer ${
+                        editRole === r
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-900 font-bold dark:bg-indigo-950/60 dark:text-indigo-300 ring-2 ring-indigo-500'
+                          : 'border-slate-200 hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="roleChoice"
-                          checked={selectedUserForEdit.role === r}
-                          onChange={() => {
-                            updateUserRole(selectedUserForEdit.id, r);
-                            setSelectedUserForEdit({ ...selectedUserForEdit, role: r });
-                          }}
-                        />
-                        <span className="font-bold">{r.replace('_', ' ')}</span>
-                      </div>
-                      {selectedUserForEdit.role === r && <CheckCircle2 className="h-4 w-4 text-indigo-600" />}
-                    </label>
+                      <span className="truncate">{r.replace('_', ' ')}</span>
+                      {editRole === r && <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 shrink-0" />}
+                    </button>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                  <span>Reset Login Password</span>
-                  <span className="text-[10px] text-slate-400">Current: {selectedUserForEdit.password || 'akash@802'}</span>
-                </label>
-                <div className="mt-1 flex gap-2">
+              {/* Account Status & Password Reset */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300">Account Status</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value as any)}
+                    className={`mt-1 w-full rounded-xl border p-2 text-xs font-bold ${
+                      editStatus === 'Active'
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : 'border-slate-300 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                    }`}
+                  >
+                    <option value="Active">Active Account</option>
+                    <option value="Inactive">Suspended / Inactive</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span>Reset Password</span>
+                    <span className="text-[10px] text-slate-400">Current: {selectedUserForEdit.password || 'akash@802'}</span>
+                  </label>
                   <input
                     type="text"
-                    placeholder="Enter new password"
-                    id="reset-pass-input"
-                    className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-mono dark:border-slate-700 dark:bg-slate-800"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="New password"
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-mono dark:border-slate-700 dark:bg-slate-800"
                   />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const input = document.getElementById('reset-pass-input') as HTMLInputElement;
-                      if (input && input.value.trim()) {
-                        updateUser(selectedUserForEdit.id, { password: input.value.trim() });
-                        setSelectedUserForEdit({ ...selectedUserForEdit, password: input.value.trim() });
-                        alert(`Password for ${selectedUserForEdit.name} updated to "${input.value.trim()}".`);
-                        input.value = '';
-                      }
-                    }}
-                    className="rounded-xl bg-slate-800 text-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
-                  >
-                    Save Pass
-                  </button>
                 </div>
               </div>
+
+              {editSuccessMsg && (
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 p-2.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Profile updated &amp; saved successfully!</span>
+                </div>
+              )}
 
               <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
@@ -550,17 +765,26 @@ export default function UserManagementView() {
                   className="flex items-center gap-1.5 rounded-xl border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:border-rose-900/40 dark:text-rose-400 dark:hover:bg-rose-950/60 transition"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  <span>Remove User</span>
+                  <span>Delete User</span>
                 </button>
 
-                <button
-                  onClick={() => setSelectedUserForEdit(null)}
-                  className="rounded-xl bg-indigo-600 px-5 py-2 font-semibold text-white hover:bg-indigo-700 shadow-xs transition"
-                >
-                  Done
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUserForEdit(null)}
+                    className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white hover:bg-indigo-700 shadow-xs transition"
+                  >
+                    Save Profile Changes
+                  </button>
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
