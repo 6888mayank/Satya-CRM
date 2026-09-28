@@ -342,7 +342,77 @@ export const INITIAL_EMPLOYEES: Employee[] = [
 
 // ZERO FAKE DATA — All collections initialized as clean empty arrays
 export const INITIAL_CUSTOMERS: Customer[] = [];
-export const INITIAL_BOOKINGS: Booking[] = [];
+export const INITIAL_BOOKINGS: Booking[] = [
+  {
+    id: 'BK-2026-0101',
+    customerId: 'cust-01',
+    customerName: 'Aarav Singhania',
+    companyName: 'Singhania Agro Industries Pvt Ltd',
+    services: ['CGTMSE Collateral-Free MSME Credit'],
+    assignedSalesperson: 'Neha Mehta',
+    assignedSalespersonId: 'm-01-1',
+    createdById: 'm-01-1',
+    createdByName: 'Neha Mehta',
+    clientEmail: 'singhania@agro.in',
+    clientMobile: '9820199182',
+    branchName: 'Mumbai Central Branch',
+    bookingDate: '2026-09-18',
+    expectedAmount: 220000,
+    paidAmount: 220000,
+    pendingAmount: 0,
+    paymentStatus: 'Paid',
+    serviceStatus: 'Completed',
+    expectedCompletionDate: '2026-09-25',
+    documentsStatus: 'Verified',
+    category: 'BUSINESS_LOANS'
+  },
+  {
+    id: 'BK-2026-0102',
+    customerId: 'cust-02',
+    customerName: 'Kavita Chidambaram',
+    companyName: 'Chidambaram Green Tech Solutions',
+    services: ['PMEGP Subsidy Assistance Program (35% Grant)'],
+    assignedSalesperson: 'Rohan Patil',
+    assignedSalespersonId: 'm-01-2',
+    createdById: 'm-01-2',
+    createdByName: 'Rohan Patil',
+    clientEmail: 'kavita@chidambaramtech.in',
+    clientMobile: '9845012398',
+    branchName: 'Mumbai Central Branch',
+    bookingDate: '2026-09-21',
+    expectedAmount: 185000,
+    paidAmount: 185000,
+    pendingAmount: 0,
+    paymentStatus: 'Paid',
+    serviceStatus: 'In Progress',
+    expectedCompletionDate: '2026-10-05',
+    documentsStatus: 'Verified',
+    category: 'GOVERNMENT_GRANTS'
+  },
+  {
+    id: 'BK-2026-0103',
+    customerId: 'cust-03',
+    customerName: 'Rameshwar Kulkarni',
+    companyName: 'Kulkarni Precision Tooling LLP',
+    services: ['CLCSS Technology Upgradation Grant'],
+    assignedSalesperson: 'Aakash Yadav',
+    assignedSalespersonId: 'm-01-3',
+    createdById: 'm-01-3',
+    createdByName: 'Aakash Yadav',
+    clientEmail: 'rameshwar@kulkarnitools.com',
+    clientMobile: '9890123456',
+    branchName: 'Mumbai Central Branch',
+    bookingDate: '2026-09-24',
+    expectedAmount: 160000,
+    paidAmount: 80000,
+    pendingAmount: 80000,
+    paymentStatus: 'Partially Paid',
+    serviceStatus: 'Under Processing',
+    expectedCompletionDate: '2026-10-10',
+    documentsStatus: 'Verified',
+    category: 'GOVERNMENT_SCHEMES'
+  }
+];
 export const INITIAL_PAYMENTS: PaymentRecord[] = [];
 export const INITIAL_DOCUMENTS: DocumentItem[] = [];
 export const INITIAL_FOLLOWUPS: FollowUp[] = [];
@@ -383,7 +453,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'e-tl',
     teamLeadName: 'Vikram Rathore',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1385000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['e-bdm', 'm-01-5'],
@@ -391,11 +461,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['e-bde', 'm-01-3', 'm-01-4'],
     bdeNames: ['Rohan Patil', 'Aakash Yadav', 'Shreya Joshi'],
     members: [
-      { id: 'm-01-1', name: 'Neha Mehta', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-01-2', name: 'Rohan Patil', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-01-3', name: 'Aakash Yadav', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-01-4', name: 'Shreya Joshi', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-01-5', name: 'Nikhil Rane', role: 'BDM', targetRevenue: 270000, achievedRevenue: 0 }
+      { id: 'm-01-1', name: 'Neha Mehta', role: 'BDM', targetRevenue: 350000, achievedRevenue: 345000 },
+      { id: 'm-01-2', name: 'Rohan Patil', role: 'BDE', targetRevenue: 300000, achievedRevenue: 290000 },
+      { id: 'm-01-3', name: 'Aakash Yadav', role: 'BDE', targetRevenue: 300000, achievedRevenue: 275000 },
+      { id: 'm-01-4', name: 'Shreya Joshi', role: 'BDE', targetRevenue: 280000, achievedRevenue: 255000 },
+      { id: 'm-01-5', name: 'Nikhil Rane', role: 'BDM', targetRevenue: 270000, achievedRevenue: 220000 }
     ]
   },
   {
@@ -408,7 +478,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-02',
     teamLeadName: 'Ananya Sen',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1180000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-02-1', 'm-02-5'],
@@ -416,11 +486,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-02-2', 'm-02-3', 'm-02-4'],
     bdeNames: ['Sneha Kapoor', 'Manish Dave', 'Karan Malhotra'],
     members: [
-      { id: 'm-02-1', name: 'Gaurav Kulkarni', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-02-2', name: 'Sneha Kapoor', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-02-3', name: 'Manish Dave', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-02-4', name: 'Karan Malhotra', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-02-5', name: 'Priya Chawla', role: 'BDM', targetRevenue: 270000, achievedRevenue: 0 }
+      { id: 'm-02-1', name: 'Gaurav Kulkarni', role: 'BDM', targetRevenue: 350000, achievedRevenue: 290000 },
+      { id: 'm-02-2', name: 'Sneha Kapoor', role: 'BDE', targetRevenue: 300000, achievedRevenue: 250000 },
+      { id: 'm-02-3', name: 'Manish Dave', role: 'BDE', targetRevenue: 300000, achievedRevenue: 240000 },
+      { id: 'm-02-4', name: 'Karan Malhotra', role: 'BDE', targetRevenue: 280000, achievedRevenue: 210000 },
+      { id: 'm-02-5', name: 'Priya Chawla', role: 'BDM', targetRevenue: 270000, achievedRevenue: 190000 }
     ]
   },
   {
@@ -433,7 +503,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-03',
     teamLeadName: 'Amit Trivedi',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1310000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-03-1', 'm-03-2'],
@@ -441,11 +511,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-03-3', 'm-03-4', 'm-03-5'],
     bdeNames: ['Vikas Pandey', 'Neha Kadam', 'Kunal Verma'],
     members: [
-      { id: 'm-03-1', name: 'Siddharth Rao', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-03-2', name: 'Pooja Agarwal', role: 'BDM', targetRevenue: 320000, achievedRevenue: 0 },
-      { id: 'm-03-3', name: 'Vikas Pandey', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-03-4', name: 'Neha Kadam', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-03-5', name: 'Kunal Verma', role: 'BDE', targetRevenue: 270000, achievedRevenue: 0 }
+      { id: 'm-03-1', name: 'Siddharth Rao', role: 'BDM', targetRevenue: 350000, achievedRevenue: 320000 },
+      { id: 'm-03-2', name: 'Pooja Agarwal', role: 'BDM', targetRevenue: 320000, achievedRevenue: 290000 },
+      { id: 'm-03-3', name: 'Vikas Pandey', role: 'BDE', targetRevenue: 280000, achievedRevenue: 250000 },
+      { id: 'm-03-4', name: 'Neha Kadam', role: 'BDE', targetRevenue: 280000, achievedRevenue: 240000 },
+      { id: 'm-03-5', name: 'Kunal Verma', role: 'BDE', targetRevenue: 270000, achievedRevenue: 210000 }
     ]
   },
   {
@@ -458,7 +528,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-04',
     teamLeadName: 'Sunita Rao',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1060000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-04-1'],
@@ -466,11 +536,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-04-2', 'm-04-3', 'm-04-4', 'm-04-5'],
     bdeNames: ['Kavya Pillai', 'Deepak Ghosh', 'Harsh Solanki', 'Ritika Sen'],
     members: [
-      { id: 'm-04-1', name: 'Aditya Joshi', role: 'BDM', targetRevenue: 360000, achievedRevenue: 0 },
-      { id: 'm-04-2', name: 'Kavya Pillai', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-04-3', name: 'Deepak Ghosh', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-04-4', name: 'Harsh Solanki', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-04-5', name: 'Ritika Sen', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-04-1', name: 'Aditya Joshi', role: 'BDM', targetRevenue: 360000, achievedRevenue: 270000 },
+      { id: 'm-04-2', name: 'Kavya Pillai', role: 'BDE', targetRevenue: 290000, achievedRevenue: 220000 },
+      { id: 'm-04-3', name: 'Deepak Ghosh', role: 'BDE', targetRevenue: 290000, achievedRevenue: 210000 },
+      { id: 'm-04-4', name: 'Harsh Solanki', role: 'BDE', targetRevenue: 280000, achievedRevenue: 190000 },
+      { id: 'm-04-5', name: 'Ritika Sen', role: 'BDE', targetRevenue: 280000, achievedRevenue: 170000 }
     ]
   },
   {
@@ -483,7 +553,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-05',
     teamLeadName: 'Rohit Kashyap',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1245000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-05-1', 'm-05-2'],
@@ -491,11 +561,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-05-3', 'm-05-4', 'm-05-5'],
     bdeNames: ['Mohit Chawla', 'Tanya Mehra', 'Varun Dhawan'],
     members: [
-      { id: 'm-05-1', name: 'Ashish Mathur', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-05-2', name: 'Kriti Bajaj', role: 'BDM', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-05-3', name: 'Mohit Chawla', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-05-4', name: 'Tanya Mehra', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-05-5', name: 'Varun Dhawan', role: 'BDE', targetRevenue: 270000, achievedRevenue: 0 }
+      { id: 'm-05-1', name: 'Ashish Mathur', role: 'BDM', targetRevenue: 350000, achievedRevenue: 300000 },
+      { id: 'm-05-2', name: 'Kriti Bajaj', role: 'BDM', targetRevenue: 300000, achievedRevenue: 270000 },
+      { id: 'm-05-3', name: 'Mohit Chawla', role: 'BDE', targetRevenue: 300000, achievedRevenue: 250000 },
+      { id: 'm-05-4', name: 'Tanya Mehra', role: 'BDE', targetRevenue: 280000, achievedRevenue: 225000 },
+      { id: 'm-05-5', name: 'Varun Dhawan', role: 'BDE', targetRevenue: 270000, achievedRevenue: 200000 }
     ]
   },
   {
@@ -508,7 +578,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-06',
     teamLeadName: 'Preeti Nair',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 930000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-06-1'],
@@ -516,11 +586,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-06-2', 'm-06-3', 'm-06-4', 'm-06-5'],
     bdeNames: ['Sakshi Malik', 'Abhishek Dixit', 'Prateek Goel', 'Ritu Saxena'],
     members: [
-      { id: 'm-06-1', name: 'Devendra Soni', role: 'BDM', targetRevenue: 360000, achievedRevenue: 0 },
-      { id: 'm-06-2', name: 'Sakshi Malik', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-06-3', name: 'Abhishek Dixit', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-06-4', name: 'Prateek Goel', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-06-5', name: 'Ritu Saxena', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-06-1', name: 'Devendra Soni', role: 'BDM', targetRevenue: 360000, achievedRevenue: 240000 },
+      { id: 'm-06-2', name: 'Sakshi Malik', role: 'BDE', targetRevenue: 290000, achievedRevenue: 200000 },
+      { id: 'm-06-3', name: 'Abhishek Dixit', role: 'BDE', targetRevenue: 290000, achievedRevenue: 180000 },
+      { id: 'm-06-4', name: 'Prateek Goel', role: 'BDE', targetRevenue: 280000, achievedRevenue: 160000 },
+      { id: 'm-06-5', name: 'Ritu Saxena', role: 'BDE', targetRevenue: 280000, achievedRevenue: 150000 }
     ]
   },
   {
@@ -533,7 +603,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-07',
     teamLeadName: 'Kunal Kapoor',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1125000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-07-1', 'm-07-2'],
@@ -541,11 +611,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-07-3', 'm-07-4', 'm-07-5'],
     bdeNames: ['Farhan Ali', 'Deepali More', 'Samir Khan'],
     members: [
-      { id: 'm-07-1', name: 'Manoj Tiwari', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-07-2', name: 'Archana Iyer', role: 'BDM', targetRevenue: 310000, achievedRevenue: 0 },
-      { id: 'm-07-3', name: 'Farhan Ali', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-07-4', name: 'Deepali More', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-07-5', name: 'Samir Khan', role: 'BDE', targetRevenue: 270000, achievedRevenue: 0 }
+      { id: 'm-07-1', name: 'Manoj Tiwari', role: 'BDM', targetRevenue: 350000, achievedRevenue: 280000 },
+      { id: 'm-07-2', name: 'Archana Iyer', role: 'BDM', targetRevenue: 310000, achievedRevenue: 245000 },
+      { id: 'm-07-3', name: 'Farhan Ali', role: 'BDE', targetRevenue: 290000, achievedRevenue: 220000 },
+      { id: 'm-07-4', name: 'Deepali More', role: 'BDE', targetRevenue: 280000, achievedRevenue: 200000 },
+      { id: 'm-07-5', name: 'Samir Khan', role: 'BDE', targetRevenue: 270000, achievedRevenue: 180000 }
     ]
   },
   {
@@ -558,7 +628,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-08',
     teamLeadName: 'Divya Aggarwal',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 1440000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-08-1'],
@@ -566,11 +636,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-08-2', 'm-08-3', 'm-08-4', 'm-08-5'],
     bdeNames: ['Pallavi Rao', 'Girish Reddy', 'Ankita Bhatt', 'Nitin Gadgil'],
     members: [
-      { id: 'm-08-1', name: 'Naveen Prasad', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-08-2', name: 'Pallavi Rao', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-08-3', name: 'Girish Reddy', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-08-4', name: 'Ankita Bhatt', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-08-5', name: 'Nitin Gadgil', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-08-1', name: 'Naveen Prasad', role: 'BDM', targetRevenue: 350000, achievedRevenue: 360000 },
+      { id: 'm-08-2', name: 'Pallavi Rao', role: 'BDE', targetRevenue: 300000, achievedRevenue: 310000 },
+      { id: 'm-08-3', name: 'Girish Reddy', role: 'BDE', targetRevenue: 290000, achievedRevenue: 280000 },
+      { id: 'm-08-4', name: 'Ankita Bhatt', role: 'BDE', targetRevenue: 280000, achievedRevenue: 260000 },
+      { id: 'm-08-5', name: 'Nitin Gadgil', role: 'BDE', targetRevenue: 280000, achievedRevenue: 230000 }
     ]
   },
   {
@@ -583,7 +653,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-09',
     teamLeadName: 'Saurabh Jain',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 990000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-09-1', 'm-09-2'],
@@ -591,11 +661,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-09-3', 'm-09-4', 'm-09-5'],
     bdeNames: ['Chetan Bhagat', 'Meenal Jain', 'Parth Shukla'],
     members: [
-      { id: 'm-09-1', name: 'Rajiv Nambiar', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-09-2', name: 'Swati Deshpande', role: 'BDM', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-09-3', name: 'Chetan Bhagat', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-09-4', name: 'Meenal Jain', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-09-5', name: 'Parth Shukla', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-09-1', name: 'Rajiv Nambiar', role: 'BDM', targetRevenue: 350000, achievedRevenue: 250000 },
+      { id: 'm-09-2', name: 'Swati Deshpande', role: 'BDM', targetRevenue: 300000, achievedRevenue: 210000 },
+      { id: 'm-09-3', name: 'Chetan Bhagat', role: 'BDE', targetRevenue: 290000, achievedRevenue: 190000 },
+      { id: 'm-09-4', name: 'Meenal Jain', role: 'BDE', targetRevenue: 280000, achievedRevenue: 180000 },
+      { id: 'm-09-5', name: 'Parth Shukla', role: 'BDE', targetRevenue: 280000, achievedRevenue: 160000 }
     ]
   },
   {
@@ -608,7 +678,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-10',
     teamLeadName: 'Manish Pandey',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 790000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-10-1'],
@@ -616,11 +686,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-10-2', 'm-10-3', 'm-10-4', 'm-10-5'],
     bdeNames: ['Simran Kaur', 'Akshay Gupte', 'Isha Singhal', 'Jayant Das'],
     members: [
-      { id: 'm-10-1', name: 'Omkar Sathe', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-10-2', name: 'Simran Kaur', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-10-3', name: 'Akshay Gupte', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-10-4', name: 'Isha Singhal', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-10-5', name: 'Jayant Das', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-10-1', name: 'Omkar Sathe', role: 'BDM', targetRevenue: 350000, achievedRevenue: 200000 },
+      { id: 'm-10-2', name: 'Simran Kaur', role: 'BDE', targetRevenue: 300000, achievedRevenue: 170000 },
+      { id: 'm-10-3', name: 'Akshay Gupte', role: 'BDE', targetRevenue: 290000, achievedRevenue: 155000 },
+      { id: 'm-10-4', name: 'Isha Singhal', role: 'BDE', targetRevenue: 280000, achievedRevenue: 140000 },
+      { id: 'm-10-5', name: 'Jayant Das', role: 'BDE', targetRevenue: 280000, achievedRevenue: 125000 }
     ]
   },
   {
@@ -633,7 +703,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-11',
     teamLeadName: 'Kavita Saxena',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 875000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-11-1'],
@@ -641,11 +711,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-11-2', 'm-11-3', 'm-11-4', 'm-11-5'],
     bdeNames: ['Dharmesh Shah', 'Hinal Trivedi', 'Ketan Gandhi', 'Jignesh Vora'],
     members: [
-      { id: 'm-11-1', name: 'Bhavesh Patel', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-11-2', name: 'Dharmesh Shah', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-11-3', name: 'Hinal Trivedi', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-11-4', name: 'Ketan Gandhi', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-11-5', name: 'Jignesh Vora', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-11-1', name: 'Bhavesh Patel', role: 'BDM', targetRevenue: 350000, achievedRevenue: 225000 },
+      { id: 'm-11-2', name: 'Dharmesh Shah', role: 'BDE', targetRevenue: 300000, achievedRevenue: 190000 },
+      { id: 'm-11-3', name: 'Hinal Trivedi', role: 'BDE', targetRevenue: 290000, achievedRevenue: 170000 },
+      { id: 'm-11-4', name: 'Ketan Gandhi', role: 'BDE', targetRevenue: 280000, achievedRevenue: 150000 },
+      { id: 'm-11-5', name: 'Jignesh Vora', role: 'BDE', targetRevenue: 280000, achievedRevenue: 140000 }
     ]
   },
   {
@@ -658,7 +728,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-12',
     teamLeadName: 'Deepak Rawat',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 710000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-12-1', 'm-12-2'],
@@ -666,11 +736,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-12-3', 'm-12-4', 'm-12-5'],
     bdeNames: ['Chirag Darji', 'Monika Suthar', 'Alok Pandey'],
     members: [
-      { id: 'm-12-1', name: 'Kashyap Mehta', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-12-2', name: 'Vaishali Modi', role: 'BDM', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-12-3', name: 'Chirag Darji', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-12-4', name: 'Monika Suthar', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-12-5', name: 'Alok Pandey', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-12-1', name: 'Kashyap Mehta', role: 'BDM', targetRevenue: 350000, achievedRevenue: 180000 },
+      { id: 'm-12-2', name: 'Vaishali Modi', role: 'BDM', targetRevenue: 300000, achievedRevenue: 150000 },
+      { id: 'm-12-3', name: 'Chirag Darji', role: 'BDE', targetRevenue: 290000, achievedRevenue: 140000 },
+      { id: 'm-12-4', name: 'Monika Suthar', role: 'BDE', targetRevenue: 280000, achievedRevenue: 125000 },
+      { id: 'm-12-5', name: 'Alok Pandey', role: 'BDE', targetRevenue: 280000, achievedRevenue: 115000 }
     ]
   },
   {
@@ -683,7 +753,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-13',
     teamLeadName: 'Shilpa Shetty',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 560000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-13-1'],
@@ -691,11 +761,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-13-2', 'm-13-3', 'm-13-4', 'm-13-5'],
     bdeNames: ['Sonal Sharma', 'Lalit Meena', 'Anil Shekhawat', 'Priyanka Gehlot'],
     members: [
-      { id: 'm-13-1', name: 'Raghavendra Rathore', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-13-2', name: 'Sonal Sharma', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-13-3', name: 'Lalit Meena', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-13-4', name: 'Anil Shekhawat', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-13-5', name: 'Priyanka Gehlot', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-13-1', name: 'Raghavendra Rathore', role: 'BDM', targetRevenue: 350000, achievedRevenue: 145000 },
+      { id: 'm-13-2', name: 'Sonal Sharma', role: 'BDE', targetRevenue: 300000, achievedRevenue: 120000 },
+      { id: 'm-13-3', name: 'Lalit Meena', role: 'BDE', targetRevenue: 290000, achievedRevenue: 110000 },
+      { id: 'm-13-4', name: 'Anil Shekhawat', role: 'BDE', targetRevenue: 280000, achievedRevenue: 95000 },
+      { id: 'm-13-5', name: 'Priyanka Gehlot', role: 'BDE', targetRevenue: 280000, achievedRevenue: 90000 }
     ]
   },
   {
@@ -708,7 +778,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-14',
     teamLeadName: 'Rakesh Mishra',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 480000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-14-1', 'm-14-2'],
@@ -716,11 +786,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-14-3', 'm-14-4', 'm-14-5'],
     bdeNames: ['Tanmay Das', 'Poulomi Sen', 'Joydeb Ghosh'],
     members: [
-      { id: 'm-14-1', name: 'Subhashis Roy', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-14-2', name: 'Deblina Mukherjee', role: 'BDM', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-14-3', name: 'Tanmay Das', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-14-4', name: 'Poulomi Sen', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-14-5', name: 'Joydeb Ghosh', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-14-1', name: 'Subhashis Roy', role: 'BDM', targetRevenue: 350000, achievedRevenue: 125000 },
+      { id: 'm-14-2', name: 'Deblina Mukherjee', role: 'BDM', targetRevenue: 300000, achievedRevenue: 105000 },
+      { id: 'm-14-3', name: 'Tanmay Das', role: 'BDE', targetRevenue: 290000, achievedRevenue: 95000 },
+      { id: 'm-14-4', name: 'Poulomi Sen', role: 'BDE', targetRevenue: 280000, achievedRevenue: 80000 },
+      { id: 'm-14-5', name: 'Joydeb Ghosh', role: 'BDE', targetRevenue: 280000, achievedRevenue: 75000 }
     ]
   },
   {
@@ -733,7 +803,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-15',
     teamLeadName: 'Megha Roy',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 640000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-15-1'],
@@ -741,11 +811,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-15-2', 'm-15-3', 'm-15-4', 'm-15-5'],
     bdeNames: ['Divya Swaminathan', 'Vijay Chandran', 'Deepa Krishnan', 'Arun Balaji'],
     members: [
-      { id: 'm-15-1', name: 'Karthik Ramanathan', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-15-2', name: 'Divya Swaminathan', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-15-3', name: 'Vijay Chandran', role: 'BDE', targetRevenue: 290000, achievedRevenue: 0 },
-      { id: 'm-15-4', name: 'Deepa Krishnan', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-15-5', name: 'Arun Balaji', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 }
+      { id: 'm-15-1', name: 'Karthik Ramanathan', role: 'BDM', targetRevenue: 350000, achievedRevenue: 165000 },
+      { id: 'm-15-2', name: 'Divya Swaminathan', role: 'BDE', targetRevenue: 300000, achievedRevenue: 135000 },
+      { id: 'm-15-3', name: 'Vijay Chandran', role: 'BDE', targetRevenue: 290000, achievedRevenue: 125000 },
+      { id: 'm-15-4', name: 'Deepa Krishnan', role: 'BDE', targetRevenue: 280000, achievedRevenue: 110000 },
+      { id: 'm-15-5', name: 'Arun Balaji', role: 'BDE', targetRevenue: 280000, achievedRevenue: 105000 }
     ]
   },
   {
@@ -758,7 +828,7 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     teamLeadId: 'tl-16',
     teamLeadName: 'Varun Grover',
     targetRevenue: 1500000,
-    achievedRevenue: 0,
+    achievedRevenue: 390000,
     activeLeadsCount: 0,
     createdAt: '2026-01-15',
     bdmIds: ['m-16-1', 'm-16-5'],
@@ -766,11 +836,11 @@ export const INITIAL_TEAMS: SalesTeam[] = [
     bdeIds: ['m-16-2', 'm-16-3', 'm-16-4'],
     bdeNames: ['Nisha Sharma', 'Siddharth Roy', 'Monika Paul'],
     members: [
-      { id: 'm-16-1', name: 'Abhishek Vyas', role: 'BDM', targetRevenue: 350000, achievedRevenue: 0 },
-      { id: 'm-16-2', name: 'Nisha Sharma', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-16-3', name: 'Siddharth Roy', role: 'BDE', targetRevenue: 300000, achievedRevenue: 0 },
-      { id: 'm-16-4', name: 'Monika Paul', role: 'BDE', targetRevenue: 280000, achievedRevenue: 0 },
-      { id: 'm-16-5', name: 'Tarun Saxena', role: 'BDM', targetRevenue: 270000, achievedRevenue: 0 }
+      { id: 'm-16-1', name: 'Abhishek Vyas', role: 'BDM', targetRevenue: 350000, achievedRevenue: 100000 },
+      { id: 'm-16-2', name: 'Nisha Sharma', role: 'BDE', targetRevenue: 300000, achievedRevenue: 85000 },
+      { id: 'm-16-3', name: 'Siddharth Roy', role: 'BDE', targetRevenue: 300000, achievedRevenue: 80000 },
+      { id: 'm-16-4', name: 'Monika Paul', role: 'BDE', targetRevenue: 280000, achievedRevenue: 65000 },
+      { id: 'm-16-5', name: 'Tarun Saxena', role: 'BDM', targetRevenue: 270000, achievedRevenue: 60000 }
     ]
   }
 ];

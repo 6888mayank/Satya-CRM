@@ -32,7 +32,9 @@ import {
   Radar,
   Network,
   Laptop,
-  Terminal
+  Terminal,
+  Trophy,
+  Crown
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -59,18 +61,29 @@ export default function Sidebar() {
     role === 'TECH' ||
     role === 'BRANCH_MANAGER';
   const canSeeSystem = role === 'SUPER_ADMIN' || role === 'TECH';
+  const canSeeTLHub =
+    role === 'SUPER_ADMIN' ||
+    role === 'RM' ||
+    role === 'BRANCH_MANAGER' ||
+    role === 'TL';
 
   const salesNavItems = [
+    ...(canSeeTLHub
+      ? [
+          {
+            id: 'tl-team-hub',
+            label: role === 'TL' ? 'My Team Hub & Rankings' : 'Team Hub & Rankings',
+            icon: Trophy,
+            badge: 'Leaderboard'
+          }
+        ]
+      : []),
     { id: 'leads', label: 'Leads', icon: UserCheck },
     { id: 'customers', label: 'Customers', icon: Users2 },
-    { id: 'companies', label: 'Companies', icon: Building2 },
     { id: 'bookings', label: 'Bookings', icon: BookmarkCheck, badge: 'Key' },
-    { id: 'deals', label: 'Deals', icon: Briefcase },
-    { id: 'pipeline', label: 'Sales Pipeline', icon: KanbanSquare },
-    { id: 'teams', label: 'Teams & Hierarchy', icon: Network, badge: 'Branch' },
+    { id: 'teams', label: 'Teams & Hierarchy', icon: Network, badge: '16 Teams' },
     { id: 'followups', label: 'Follow-ups', icon: PhoneCall },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-    { id: 'activities', label: 'Activities', icon: Activity },
   ];
 
   const hrNavItems = [
@@ -252,6 +265,40 @@ export default function Sidebar() {
                   <span className="truncate">RM 360° Cockpit</span>
                   <span className="rounded-full bg-amber-200/60 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-900 dark:bg-amber-900 dark:text-amber-200">
                     Live
+                  </span>
+                </div>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Dedicated Team Leader Portal (TL Role) */}
+        {role === 'TL' && (
+          <div className="mb-4">
+            {!isCollapsed && (
+              <div className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                Team Leader Portal
+              </div>
+            )}
+            <button
+              onClick={() => setActiveView('tl-team-hub')}
+              title={isCollapsed ? 'My Team Hub & Rankings' : undefined}
+              className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                activeView === 'tl-team-hub'
+                  ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs'
+                  : 'text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 hover:text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60'
+              }`}
+            >
+              <Trophy
+                className={`h-4 w-4 shrink-0 transition-transform group-hover:scale-110 ${
+                  activeView === 'tl-team-hub' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'
+                }`}
+              />
+              {!isCollapsed && (
+                <div className="flex flex-1 items-center justify-between overflow-hidden">
+                  <span className="truncate">My Team & Rankings</span>
+                  <span className="rounded-full bg-indigo-200/60 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-900 dark:bg-indigo-900 dark:text-indigo-200">
+                    Leaderboard
                   </span>
                 </div>
               )}

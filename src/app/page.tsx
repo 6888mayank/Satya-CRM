@@ -13,15 +13,12 @@ import WFHModal from '@/components/modals/WFHModal';
 import DashboardView from '@/components/views/DashboardView';
 import RMCockpitView from '@/components/views/RMCockpitView';
 import TeamsView from '@/components/views/TeamsView';
+import TLTeamHubView from '@/components/views/TLTeamHubView';
 import LeadsView from '@/components/views/LeadsView';
 import CustomersView from '@/components/views/CustomersView';
-import CompaniesView from '@/components/views/CompaniesView';
 import BookingsView from '@/components/views/BookingsView';
-import DealsView from '@/components/views/DealsView';
-import PipelineView from '@/components/views/PipelineView';
 import FollowUpsView from '@/components/views/FollowUpsView';
 import TasksView from '@/components/views/TasksView';
-import ActivitiesView from '@/components/views/ActivitiesView';
 import EmployeesView from '@/components/views/EmployeesView';
 import AttendanceView from '@/components/views/AttendanceView';
 import LeavesView from '@/components/views/LeavesView';
@@ -52,26 +49,25 @@ function CRMApp() {
         return <DashboardView />;
       case 'rm-cockpit':
         return <RMCockpitView />;
+      case 'tl-team-hub':
+        return <TLTeamHubView />;
       case 'teams':
         return <TeamsView />;
       case 'leads':
         return <LeadsView />;
       case 'customers':
         return <CustomersView />;
-      case 'companies':
-        return <CompaniesView />;
       case 'bookings':
         return <BookingsView />;
-      case 'deals':
-        return <DealsView />;
-      case 'pipeline':
-        return <PipelineView />;
       case 'followups':
         return <FollowUpsView />;
       case 'tasks':
         return <TasksView />;
+      case 'companies':
+      case 'deals':
+      case 'pipeline':
       case 'activities':
-        return <ActivitiesView />;
+        return <TLTeamHubView />;
       case 'employees':
         return <EmployeesView />;
       case 'attendance':

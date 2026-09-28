@@ -69,7 +69,8 @@ export default function CommandPalette() {
   );
 
   const quickNav = [
-    { label: 'Sales Pipeline (Kanban)', view: 'pipeline' },
+    { label: 'TL Team Hub & Org Rankings', view: 'tl-team-hub' },
+    { label: 'All Teams & Hierarchy', view: 'teams' },
     { label: 'Customer Bookings Ledger', view: 'bookings' },
     { label: 'Attendance Roster & Punches', view: 'attendance' },
     { label: 'Leave Management', view: 'leaves' },
