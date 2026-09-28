@@ -31,6 +31,16 @@ export interface UserProfile {
   branch?: string;
 }
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: 'BDM' | 'BDE';
+  targetRevenue: number; // Assigned by TL
+  achievedRevenue: number;
+  email?: string;
+  phone?: string;
+}
+
 export interface SalesTeam {
   id: string;
   name: string;
@@ -40,11 +50,12 @@ export interface SalesTeam {
   branchManagerName: string;
   teamLeadId: string;
   teamLeadName: string;
+  members: TeamMember[]; // Up to 5 members per team under the TL
   bdmIds: string[];
   bdmNames: string[];
   bdeIds: string[];
   bdeNames: string[];
-  targetRevenue: number;
+  targetRevenue: number; // Set/adjusted exclusively by Super Admin
   achievedRevenue: number;
   activeLeadsCount: number;
   createdAt: string;
@@ -206,6 +217,12 @@ export interface Booking {
   companyName: string;
   services: string[];
   assignedSalesperson: string;
+  assignedSalespersonId?: string;
+  createdById?: string;
+  createdByName?: string;
+  clientEmail?: string;
+  clientMobile?: string;
+  branchName?: string;
   bookingDate: string;
   expectedAmount: number;
   paidAmount: number;

@@ -119,8 +119,10 @@ export default function RMCockpitView() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Branch Revenue Realized</span>
-          <p className="mt-2 text-2xl font-extrabold text-emerald-600">{formatCurrency(branchRevenue)}</p>
-          <span className="text-[11px] text-slate-400 font-medium">{bookings.length} active branch orders</span>
+          <p className="mt-2 text-2xl font-extrabold text-emerald-600 font-mono">{formatCurrency(branchRevenue)}</p>
+          <span className="text-[11px] text-slate-400 font-medium font-mono">
+            Target: {formatCurrency(teams.reduce((s, t) => s + t.targetRevenue, 0))} ({teams.length} Teams)
+          </span>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 shadow-xs">

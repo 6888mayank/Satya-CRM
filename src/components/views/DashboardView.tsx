@@ -47,6 +47,7 @@ export default function DashboardView() {
     attendance,
     leaves,
     employees,
+    teams,
     auditLogs,
     customFields,
     automations,
@@ -408,6 +409,63 @@ export default function DashboardView() {
                   )))}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* 16 Teams Target vs Achieved Leaderboard (Super Admin & RM Radar) */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>16 Teams Target &amp; Quota Leaderboard</span>
+                  <span className="rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                    {teams.length} Active Sales Pods
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Live tracking of monthly revenue achievement against Super Admin targets across all 16 teams
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveView('teams')}
+                className="text-xs font-semibold text-indigo-600 hover:underline shrink-0"
+              >
+                Manage All 16 Teams →
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {teams.slice(0, 16).map((t) => {
+                const pct = t.targetRevenue > 0
+                  ? Math.min(100, Math.round((t.achievedRevenue / t.targetRevenue) * 100))
+                  : 0;
+
+                return (
+                  <div
+                    key={t.id}
+                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/40 text-xs space-y-1.5"
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-slate-900 dark:text-white truncate max-w-[130px]" title={t.name}>
+                        {t.name}
+                      </span>
+                      <span className="font-mono font-bold text-emerald-600">{pct}%</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">TL: {t.teamLeadName} • {t.members?.length || 0} members</p>
+                    <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                      <div
+                        className="h-full bg-indigo-600 rounded-full"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                      <span>Target: {formatCurrency(t.targetRevenue)}</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-bold">{formatCurrency(t.achievedRevenue)}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </>

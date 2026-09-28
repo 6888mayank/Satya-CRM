@@ -21,6 +21,7 @@ import {
   LeadStatus,
   ServiceCategory,
   SalesTeam,
+  TeamMember,
   WFHRequest,
   PinnedDevice
 } from '@/types/crm';
@@ -69,6 +70,7 @@ import {
   dbDeleteEmployee,
   dbInsertTeam,
   dbUpdateTeam,
+  dbDeleteTeam,
   dbInsertAuditLog,
   dbInsertNotification,
   dbMarkNotificationRead,
@@ -190,7 +192,11 @@ interface CRMContextType {
   addHoliday: (holiday: Omit<Holiday, 'id'>) => boolean;
   updateHoliday: (holiday: Holiday) => boolean;
   deleteHoliday: (holidayId: string) => boolean;
-  createTeam: (team: Omit<SalesTeam, 'id' | 'createdAt'>) => void;
+  createTeam: (team: Omit<SalesTeam, 'id' | 'createdAt'>) => boolean;
+  deleteTeam: (teamId: string) => boolean;
+  updateTeamTarget: (teamId: string, newTarget: number) => boolean;
+  updateTeamName: (teamId: string, newName: string, newDivision?: string) => boolean;
+  updateMemberTargets: (teamId: string, members: TeamMember[]) => boolean;
   updateTeamMembers: (teamId: string, updates: Partial<SalesTeam>) => void;
   markNotificationRead: (id: string) => void;
   clearAllNotifications: () => void;
@@ -503,6 +509,12 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       companyName: newCustomer.companyName,
       services: payload.services,
       assignedSalesperson: newCustomer.assignedSalespersonName,
+      assignedSalespersonId: newCustomer.assignedSalespersonId || currentUser.id,
+      createdById: currentUser.id,
+      createdByName: currentUser.name,
+      clientEmail: newCustomer.email,
+      clientMobile: newCustomer.mobile,
+      branchName: currentUser.branch || 'Corporate HQ',
       bookingDate: nowStr,
       expectedAmount: payload.expectedAmount,
       paidAmount: advance,
@@ -516,6 +528,31 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
 
     setBookings((prev) => [newBooking, ...prev]);
     dbInsertBooking(newBooking);
+
+    // Dynamic Team & Member Target Attribution
+    const creditAmount = advance > 0 ? advance : payload.expectedAmount;
+    setTeams((prev) =>
+      prev.map((team) => {
+        const isTeamMatch =
+          team.members?.some(
+            (m) => m.name === newCustomer.assignedSalespersonName || m.id === newCustomer.assignedSalespersonId
+          ) || team.teamLeadName === newCustomer.assignedSalespersonName;
+
+        if (!isTeamMatch) return team;
+
+        const updatedMembers = (team.members || []).map((m) =>
+          m.name === newCustomer.assignedSalespersonName || m.id === newCustomer.assignedSalespersonId
+            ? { ...m, achievedRevenue: m.achievedRevenue + creditAmount }
+            : m
+        );
+
+        return {
+          ...team,
+          members: updatedMembers,
+          achievedRevenue: team.achievedRevenue + creditAmount
+        };
+      })
+    );
 
     if (advance > 0) {
       const payment: PaymentRecord = {
@@ -863,15 +900,144 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     addAuditLog('WFH Request Decided', 'WFH', requestId, `${currentUser.name} marked WFH request as ${status}`);
   };
 
-  const createTeam = (team: Omit<SalesTeam, 'id' | 'createdAt'>) => {
+  const createTeam = (team: Omit<SalesTeam, 'id' | 'createdAt'>): boolean => {
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      alert('Access Denied: Only Super Admin has authority to generate or add new sales teams.');
+      return false;
+    }
+
+    const members = (team.members || []).slice(0, 5);
     const newTeam: SalesTeam = {
       ...team,
-      id: `team-${Date.now().toString().slice(-4)}`,
+      members,
+      id: `team-${(teams.length + 1).toString().padStart(2, '0')}`,
       createdAt: new Date().toISOString().split('T')[0]
     };
-    setTeams((prev) => [newTeam, ...prev]);
+    setTeams((prev) => [...prev, newTeam]);
     dbInsertTeam(newTeam);
-    addAuditLog('Sales Team Created', 'Team Management', newTeam.id, `${currentUser.name} created sales pod ${newTeam.name} in branch ${newTeam.branchName}`);
+    addAuditLog(
+      'Sales Team Created',
+      'Team Hierarchy',
+      newTeam.id,
+      `${currentUser.name} (Super Admin) created sales team "${newTeam.name}" with monthly target ₹${newTeam.targetRevenue.toLocaleString()}`
+    );
+    return true;
+  };
+
+  const deleteTeam = (teamId: string): boolean => {
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      alert('Access Denied: Only Super Admin has authority to remove or delete sales teams.');
+      return false;
+    }
+
+    const target = teams.find((t) => t.id === teamId);
+    if (!target) return false;
+
+    setTeams((prev) => prev.filter((t) => t.id !== teamId));
+    dbDeleteTeam(teamId);
+    addAuditLog(
+      'Sales Team Removed',
+      'Team Hierarchy',
+      teamId,
+      `${currentUser.name} (Super Admin) deleted sales team "${target.name}"`
+    );
+    return true;
+  };
+
+  const updateTeamName = (teamId: string, newName: string, newDivision?: string): boolean => {
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      alert('Access Denied: Only Super Admin has authority to change sales team names or divisions.');
+      return false;
+    }
+
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId
+          ? { ...t, name: newName.trim(), ...(newDivision ? { division: newDivision } : {}) }
+          : t
+      )
+    );
+    dbUpdateTeam(teamId, { name: newName.trim(), ...(newDivision ? { division: newDivision } : {}) });
+    addAuditLog(
+      'Sales Team Renamed',
+      'Team Hierarchy',
+      teamId,
+      `${currentUser.name} (Super Admin) renamed team to "${newName}"`
+    );
+    return true;
+  };
+
+  const updateTeamTarget = (teamId: string, newTarget: number): boolean => {
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      alert('Access Denied: Only Super Admin has authority to increase or decrease team revenue targets.');
+      return false;
+    }
+
+    const num = Number(newTarget);
+    if (isNaN(num) || num < 0) return false;
+
+    setTeams((prev) =>
+      prev.map((t) => (t.id === teamId ? { ...t, targetRevenue: num } : t))
+    );
+    dbUpdateTeam(teamId, { targetRevenue: num });
+    addAuditLog(
+      'Team Target Adjusted',
+      'Team Hierarchy',
+      teamId,
+      `${currentUser.name} (Super Admin) updated monthly target for team to ₹${num.toLocaleString()}`
+    );
+    return true;
+  };
+
+  const updateMemberTargets = (teamId: string, members: TeamMember[]): boolean => {
+    const team = teams.find((t) => t.id === teamId);
+    if (!team) return false;
+
+    const isTL = currentUser.role === 'TL' && (currentUser.id === team.teamLeadId || currentUser.name === team.teamLeadName);
+    const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
+    const isRM = currentUser.role === 'RM';
+
+    if (!isTL && !isSuperAdmin && !isRM) {
+      alert('Access Denied: Only the Team Leader (TL) or Super Admin can assign individual targets to team members.');
+      return false;
+    }
+
+    if (members.length > 5) {
+      alert('Limit Exceeded: A team can have a maximum of 5 members under the TL.');
+      return false;
+    }
+
+    const bdmMembers = members.filter((m) => m.role === 'BDM');
+    const bdeMembers = members.filter((m) => m.role === 'BDE');
+
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId
+          ? {
+              ...t,
+              members,
+              bdmIds: bdmMembers.map((m) => m.id),
+              bdmNames: bdmMembers.map((m) => m.name),
+              bdeIds: bdeMembers.map((m) => m.id),
+              bdeNames: bdeMembers.map((m) => m.name)
+            }
+          : t
+      )
+    );
+    dbUpdateTeam(teamId, {
+      members,
+      bdmIds: bdmMembers.map((m) => m.id),
+      bdmNames: bdmMembers.map((m) => m.name),
+      bdeIds: bdeMembers.map((m) => m.id),
+      bdeNames: bdeMembers.map((m) => m.name)
+    });
+    addAuditLog(
+      'Member Targets Assigned',
+      'Team Hierarchy',
+      teamId,
+      `${currentUser.name} assigned individual targets for ${members.length} members in team "${team.name}"`
+    );
+    return true;
   };
 
   const updateTeamMembers = (teamId: string, updates: Partial<SalesTeam>) => {
@@ -1427,6 +1593,10 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         updateHoliday,
         deleteHoliday,
         createTeam,
+        deleteTeam,
+        updateTeamName,
+        updateTeamTarget,
+        updateMemberTargets,
         updateTeamMembers,
         markNotificationRead,
         clearAllNotifications

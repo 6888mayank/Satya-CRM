@@ -123,6 +123,12 @@ function mapBookingFromDb(row: any): Booking {
     companyName: row.company_name || '',
     services: Array.isArray(row.services) ? row.services : [],
     assignedSalesperson: row.assigned_salesperson || 'Unassigned',
+    assignedSalespersonId: row.assigned_salesperson_id || '',
+    createdById: row.created_by_id || '',
+    createdByName: row.created_by_name || '',
+    clientEmail: row.client_email || '',
+    clientMobile: row.client_mobile || '',
+    branchName: row.branch_name || '',
     bookingDate: row.booking_date || new Date().toISOString(),
     expectedAmount: Number(row.expected_amount) || 0,
     paidAmount: Number(row.paid_amount) || 0,
@@ -209,6 +215,7 @@ function mapTeamFromDb(row: any): SalesTeam {
     bdmNames: Array.isArray(row.bdm_names) ? row.bdm_names : [],
     bdeIds: Array.isArray(row.bde_ids) ? row.bde_ids : [],
     bdeNames: Array.isArray(row.bde_names) ? row.bde_names : [],
+    members: Array.isArray(row.members) ? row.members : [],
     targetRevenue: Number(row.target_revenue) || 0,
     achievedRevenue: Number(row.achieved_revenue) || 0,
     activeLeadsCount: Number(row.active_leads_count) || 0,
@@ -536,6 +543,12 @@ export async function dbInsertBooking(booking: Booking) {
     company_name: booking.companyName,
     services: booking.services,
     assigned_salesperson: booking.assignedSalesperson,
+    assigned_salesperson_id: booking.assignedSalespersonId || '',
+    created_by_id: booking.createdById || '',
+    created_by_name: booking.createdByName || '',
+    client_email: booking.clientEmail || '',
+    client_mobile: booking.clientMobile || '',
+    branch_name: booking.branchName || '',
     booking_date: booking.bookingDate,
     expected_amount: booking.expectedAmount,
     paid_amount: booking.paidAmount,
@@ -845,6 +858,7 @@ export async function dbInsertTeam(team: SalesTeam) {
     bdm_names: team.bdmNames,
     bde_ids: team.bdeIds,
     bde_names: team.bdeNames,
+    members: team.members || [],
     target_revenue: team.targetRevenue,
     achieved_revenue: team.achievedRevenue,
     active_leads_count: team.activeLeadsCount
@@ -862,6 +876,14 @@ export async function dbUpdateTeam(id: string, updates: Partial<SalesTeam>) {
 
   if (isSupabaseConfigured) {
     await supabase.from('sales_teams').update(updates).eq('id', id);
+  }
+}
+
+export async function dbDeleteTeam(id: string) {
+  callPostgresApi('sales_teams', 'delete', undefined, id).catch(() => {});
+
+  if (isSupabaseConfigured) {
+    await supabase.from('sales_teams').delete().eq('id', id);
   }
 }
 
