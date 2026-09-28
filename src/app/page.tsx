@@ -1,69 +1,140 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React from 'react';
+import { CRMProvider, useCRM } from '@/context/crm-context';
+import Header from '@/components/layout/Header';
+import Sidebar from '@/components/layout/Sidebar';
+import BookingModal from '@/components/modals/BookingModal';
+import CustomerDetailDrawer from '@/components/modals/CustomerDetailDrawer';
+import CommandPalette from '@/components/modals/CommandPalette';
+import WFHModal from '@/components/modals/WFHModal';
+
+// Views
+import DashboardView from '@/components/views/DashboardView';
+import RMCockpitView from '@/components/views/RMCockpitView';
+import TeamsView from '@/components/views/TeamsView';
+import LeadsView from '@/components/views/LeadsView';
+import CustomersView from '@/components/views/CustomersView';
+import CompaniesView from '@/components/views/CompaniesView';
+import BookingsView from '@/components/views/BookingsView';
+import DealsView from '@/components/views/DealsView';
+import PipelineView from '@/components/views/PipelineView';
+import FollowUpsView from '@/components/views/FollowUpsView';
+import TasksView from '@/components/views/TasksView';
+import ActivitiesView from '@/components/views/ActivitiesView';
+import EmployeesView from '@/components/views/EmployeesView';
+import AttendanceView from '@/components/views/AttendanceView';
+import LeavesView from '@/components/views/LeavesView';
+import HolidaysView from '@/components/views/HolidaysView';
+import ReportsSalesView from '@/components/views/ReportsSalesView';
+import ReportsHRView from '@/components/views/ReportsHRView';
+import ReportsAttendanceView from '@/components/views/ReportsAttendanceView';
+import UserManagementView from '@/components/views/UserManagementView';
+import SystemConfigView from '@/components/views/SystemConfigView';
+import CustomFieldsView from '@/components/views/CustomFieldsView';
+import AutomationView from '@/components/views/AutomationView';
+import IntegrationsView from '@/components/views/IntegrationsView';
+import NotificationsView from '@/components/views/NotificationsView';
+import AuditLogsView from '@/components/views/AuditLogsView';
+import TechCockpitView from '@/components/views/TechCockpitView';
+import LoginView from '@/components/auth/LoginView';
+
+function CRMApp() {
+  const { activeView, isAuthenticated } = useCRM();
+
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return <DashboardView />;
+      case 'rm-cockpit':
+        return <RMCockpitView />;
+      case 'teams':
+        return <TeamsView />;
+      case 'leads':
+        return <LeadsView />;
+      case 'customers':
+        return <CustomersView />;
+      case 'companies':
+        return <CompaniesView />;
+      case 'bookings':
+        return <BookingsView />;
+      case 'deals':
+        return <DealsView />;
+      case 'pipeline':
+        return <PipelineView />;
+      case 'followups':
+        return <FollowUpsView />;
+      case 'tasks':
+        return <TasksView />;
+      case 'activities':
+        return <ActivitiesView />;
+      case 'employees':
+        return <EmployeesView />;
+      case 'attendance':
+        return <AttendanceView />;
+      case 'leaves':
+        return <LeavesView />;
+      case 'holidays':
+        return <HolidaysView />;
+      case 'reports-sales':
+        return <ReportsSalesView />;
+      case 'reports-hr':
+        return <ReportsHRView />;
+      case 'reports-attendance':
+        return <ReportsAttendanceView />;
+      case 'user-management':
+        return <UserManagementView />;
+      case 'system-config':
+        return <SystemConfigView />;
+      case 'custom-fields':
+        return <CustomFieldsView />;
+      case 'automation':
+        return <AutomationView />;
+      case 'integrations':
+      case 'api-webhooks':
+        return <IntegrationsView />;
+      case 'notifications-page':
+        return <NotificationsView />;
+      case 'audit-logs':
+        return <AuditLogsView />;
+      case 'tech-cockpit':
+        return <TechCockpitView />;
+      default:
+        return <DashboardView />;
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+      {/* Enterprise Sidebar with Role Guards */}
+      <Sidebar />
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        <Header />
+
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl">{renderActiveView()}</div>
+        </main>
+      </div>
+
+      {/* Modals & Drawers */}
+      <BookingModal />
+      <CustomerDetailDrawer />
+      <CommandPalette />
+      <WFHModal />
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <CRMProvider>
+      <CRMApp />
+    </CRMProvider>
   );
 }
