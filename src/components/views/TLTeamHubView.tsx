@@ -65,7 +65,7 @@ export default function TLTeamHubView() {
 
   // Leaderboard filters & sorting
   const [leaderboardSearch, setLeaderboardSearch] = useState('');
-  const [leaderboardDivision, setLeaderboardDivision] = useState('ALL');
+  const [leaderboardBranch, setLeaderboardBranch] = useState<'ALL' | 'ND1' | 'ND2'>('ALL');
   const [sortBy, setSortBy] = useState<'rank' | 'revenue-desc' | 'percent-desc' | 'revenue-asc'>('rank');
 
   // Member target editing modal state
@@ -146,13 +146,12 @@ export default function TLTeamHubView() {
         (t) =>
           t.name.toLowerCase().includes(q) ||
           t.teamLeadName.toLowerCase().includes(q) ||
-          t.division.toLowerCase().includes(q) ||
           t.branchName.toLowerCase().includes(q)
       );
     }
 
-    if (leaderboardDivision !== 'ALL') {
-      result = result.filter((t) => t.division === leaderboardDivision);
+    if (leaderboardBranch !== 'ALL') {
+      result = result.filter((t) => t.branchName === leaderboardBranch);
     }
 
     if (sortBy === 'revenue-desc') {
@@ -165,7 +164,7 @@ export default function TLTeamHubView() {
     }
 
     return result;
-  }, [rankedTeams, leaderboardSearch, leaderboardDivision, sortBy]);
+  }, [rankedTeams, leaderboardSearch, leaderboardBranch, sortBy]);
 
   // Bookings associated with active team members
   const teamBookings = useMemo(() => {
@@ -437,13 +436,13 @@ export default function TLTeamHubView() {
                     {activeTeam?.name}
                   </h3>
                   <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                    {activeTeam?.division}
+                    Branch {activeTeam?.branchName} • All Services
                   </span>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                    {activeTeam?.branchName}
+                  <span className="flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400">
+                    <MapPin className="h-3.5 w-3.5" />
+                    Branch {activeTeam?.branchName}
                   </span>
                   <span>•</span>
                   <span>Branch Manager: <strong className="text-slate-800 dark:text-slate-200">{activeTeam?.branchManagerName}</strong></span>
@@ -705,17 +704,15 @@ export default function TLTeamHubView() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {/* Division Filter */}
+              {/* Branch Filter (ND1 & ND2) */}
               <select
-                value={leaderboardDivision}
-                onChange={(e) => setLeaderboardDivision(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                value={leaderboardBranch}
+                onChange={(e) => setLeaderboardBranch(e.target.value as any)}
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
-                <option value="ALL">All Divisions</option>
-                <option value="Government Grants & Funding">Government Grants & Funding</option>
-                <option value="Government Schemes & Subsidies">Government Schemes & Subsidies</option>
-                <option value="Business Loans & MSME Credit">Business Loans & MSME Credit</option>
-                <option value="IT Services & SaaS">IT Services & SaaS</option>
+                <option value="ALL">All Branches (ND1 &amp; ND2)</option>
+                <option value="ND1">Branch ND1</option>
+                <option value="ND2">Branch ND2</option>
               </select>
 
               {/* Sort By */}
@@ -759,9 +756,9 @@ export default function TLTeamHubView() {
                 <thead className="border-b border-slate-200 bg-slate-50/80 font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
                   <tr>
                     <th className="px-4 py-3.5 text-center w-16">Rank</th>
-                    <th className="px-4 py-3.5">Team & Division</th>
+                    <th className="px-4 py-3.5">Team</th>
                     <th className="px-4 py-3.5">Team Leader (TL)</th>
-                    <th className="px-4 py-3.5">Branch</th>
+                    <th className="px-4 py-3.5 text-center">Branch</th>
                     <th className="px-4 py-3.5 text-right">Target (₹)</th>
                     <th className="px-4 py-3.5 text-right">Achieved (₹)</th>
                     <th className="px-4 py-3.5 w-44">Quota Progress</th>
@@ -826,7 +823,7 @@ export default function TLTeamHubView() {
                             )}
                           </div>
                           <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate max-w-xs">
-                            {team.division}
+                            All Services Deals
                           </span>
                         </td>
 
@@ -836,8 +833,10 @@ export default function TLTeamHubView() {
                         </td>
 
                         {/* Branch */}
-                        <td className="px-4 py-3.5 text-slate-600 dark:text-slate-400">
-                          {team.branchName}
+                        <td className="px-4 py-3.5 text-center">
+                          <span className="rounded-md bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-black text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800">
+                            {team.branchName}
+                          </span>
                         </td>
 
                         {/* Target */}

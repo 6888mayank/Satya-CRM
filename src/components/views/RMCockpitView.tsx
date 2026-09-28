@@ -94,10 +94,10 @@ export default function RMCockpitView() {
             <span className="rounded-md bg-indigo-500/30 px-2.5 py-0.5 text-xs font-bold text-indigo-200 border border-indigo-400/30">
               RM 360° Command Center
             </span>
-            <span className="text-xs text-indigo-300">West Region & Pune Branch Hub</span>
+            <span className="text-xs text-indigo-300">Regional Command • Branches ND1 &amp; ND2</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight mt-1.5">
-            Branch Operations & Staff Radar
+            Branch Operations &amp; Staff Radar (ND1 &amp; ND2)
           </h1>
           <p className="text-xs text-indigo-200 mt-1 max-w-2xl">
             Live oversight of every single employee across Sales (BM, TL, BDM, BDE), Tech, and HR. Full authority over live sales, biometric attendance, WFH requests & leave approvals.

@@ -43,7 +43,7 @@ export default function TeamsView() {
 
   // Search & Filter
   const [search, setSearch] = useState('');
-  const [selectedDivision, setSelectedDivision] = useState('ALL');
+  const [selectedBranch, setSelectedBranch] = useState<'ALL' | 'ND1' | 'ND2'>('ALL');
 
   // Super Admin Modals
   const [isNewTeamOpen, setIsNewTeamOpen] = useState(false);
@@ -56,14 +56,12 @@ export default function TeamsView() {
 
   // Super Admin Create Form State
   const [newTeamName, setNewTeamName] = useState('');
-  const [newDivision, setNewDivision] = useState('Government Schemes & Subsidies');
-  const [newBranch, setNewBranch] = useState('Mumbai Central Branch');
+  const [newBranch, setNewBranch] = useState<'ND1' | 'ND2'>('ND1');
   const [newTLId, setNewTLId] = useState('');
   const [newTarget, setNewTarget] = useState<number>(1500000);
 
   // Super Admin Edit Form State
   const [editName, setEditName] = useState('');
-  const [editDivision, setEditDivision] = useState('');
   const [editTarget, setEditTarget] = useState<number>(1500000);
 
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
@@ -78,7 +76,6 @@ export default function TeamsView() {
   const openSuperAdminEdit = (team: SalesTeam) => {
     setEditingTeamSA(team);
     setEditName(team.name);
-    setEditDivision(team.division);
     setEditTarget(team.targetRevenue);
   };
 
@@ -86,8 +83,8 @@ export default function TeamsView() {
     e.preventDefault();
     if (!editingTeamSA) return;
 
-    if (editName.trim() !== editingTeamSA.name || editDivision !== editingTeamSA.division) {
-      updateTeamName(editingTeamSA.id, editName.trim(), editDivision);
+    if (editName.trim() !== editingTeamSA.name) {
+      updateTeamName(editingTeamSA.id, editName.trim(), editingTeamSA.division || 'All Services');
     }
     if (editTarget !== editingTeamSA.targetRevenue) {
       updateTeamTarget(editingTeamSA.id, Number(editTarget));
@@ -171,7 +168,7 @@ export default function TeamsView() {
 
     createTeam({
       name: newTeamName.trim(),
-      division: newDivision,
+      division: 'All Services',
       branchName: newBranch,
       branchManagerId: 'e-bm',
       branchManagerName: 'Pooja Deshmukh',
@@ -208,19 +205,18 @@ export default function TeamsView() {
   // Filtered Teams
   const filteredTeams = useMemo(() => {
     return teams.filter((t) => {
-      const matchesDivision = selectedDivision === 'ALL' || t.division.includes(selectedDivision);
+      const matchesBranch = selectedBranch === 'ALL' || t.branchName === selectedBranch;
       const q = search.toLowerCase().trim();
       const matchesSearch =
         !q ||
         t.name.toLowerCase().includes(q) ||
         t.teamLeadName.toLowerCase().includes(q) ||
         t.branchName.toLowerCase().includes(q) ||
-        t.division.toLowerCase().includes(q) ||
         t.members?.some((m) => m.name.toLowerCase().includes(q));
 
-      return matchesDivision && matchesSearch;
+      return matchesBranch && matchesSearch;
     });
-  }, [teams, selectedDivision, search]);
+  }, [teams, selectedBranch, search]);
 
   return (
     <div className="space-y-6">
@@ -343,22 +339,21 @@ export default function TeamsView() {
 
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs">
           {[
-            { id: 'ALL', label: 'All Divisions' },
-            { id: 'Government', label: 'Govt Grants & Schemes' },
-            { id: 'Loans', label: 'Business Loans' },
-            { id: 'IT Services', label: 'IT & Software' }
-          ].map((div) => (
+            { id: 'ALL', label: 'All Branches (ND1 & ND2)' },
+            { id: 'ND1', label: 'Branch ND1' },
+            { id: 'ND2', label: 'Branch ND2' }
+          ].map((b) => (
             <button
-              key={div.id}
+              key={b.id}
               type="button"
-              onClick={() => setSelectedDivision(div.id)}
-              className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold transition shrink-0 cursor-pointer ${
-                selectedDivision === div.id
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+              onClick={() => setSelectedBranch(b.id as any)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition shrink-0 cursor-pointer ${
+                selectedBranch === b.id
+                  ? 'bg-indigo-600 text-white shadow-xs'
                   : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800'
               }`}
             >
-              {div.label}
+              {b.label}
             </button>
           ))}
         </div>
@@ -388,13 +383,17 @@ export default function TeamsView() {
                 {/* Team Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                      {team.division}
-                    </span>
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5 flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="rounded-md bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800">
+                        Branch {team.branchName}
+                      </span>
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                        All Services
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
                       <span>{team.name}</span>
                     </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{team.branchName}</p>
                   </div>
 
                   {/* Super Admin Team Controls */}
@@ -599,34 +598,16 @@ export default function TeamsView() {
                 />
               </div>
 
-              <div>
-                <label className="font-semibold text-slate-700 dark:text-slate-300">Service Division</label>
-                <select
-                  value={newDivision}
-                  onChange={(e) => setNewDivision(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                >
-                  <option value="Government Grants & Funding">Government Grants &amp; Funding</option>
-                  <option value="Government Schemes & Subsidies">Government Schemes &amp; Subsidies</option>
-                  <option value="Business Loans & MSME Credit">Business Loans &amp; MSME Credit</option>
-                  <option value="IT Services & SaaS Solutions">IT Services &amp; SaaS Solutions</option>
-                </select>
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 dark:text-slate-300">Branch Location</label>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300">Branch Location *</label>
                   <select
                     value={newBranch}
-                    onChange={(e) => setNewBranch(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    onChange={(e) => setNewBranch(e.target.value as any)}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   >
-                    <option value="Mumbai Central Branch">Mumbai Central</option>
-                    <option value="Pune West Hub">Pune West</option>
-                    <option value="Delhi NCR Branch">Delhi NCR</option>
-                    <option value="Bangalore Tech Branch">Bangalore Tech</option>
-                    <option value="Hyderabad Hub">Hyderabad Hub</option>
-                    <option value="Corporate HQ">Corporate HQ</option>
+                    <option value="ND1">Branch ND1</option>
+                    <option value="ND2">Branch ND2</option>
                   </select>
                 </div>
 
@@ -718,20 +699,6 @@ export default function TeamsView() {
                   onChange={(e) => setEditName(e.target.value)}
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
-              </div>
-
-              <div>
-                <label className="font-semibold text-slate-700 dark:text-slate-300">Service Division</label>
-                <select
-                  value={editDivision}
-                  onChange={(e) => setEditDivision(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                >
-                  <option value="Government Grants & Funding">Government Grants &amp; Funding</option>
-                  <option value="Government Schemes & Subsidies">Government Schemes &amp; Subsidies</option>
-                  <option value="Business Loans & MSME Credit">Business Loans &amp; MSME Credit</option>
-                  <option value="IT Services & SaaS Solutions">IT Services &amp; SaaS Solutions</option>
-                </select>
               </div>
 
               <div>
