@@ -198,6 +198,7 @@ interface CRMContextType {
   updateTeamName: (teamId: string, newName: string, newDivision?: string) => boolean;
   updateMemberTargets: (teamId: string, members: TeamMember[]) => boolean;
   updateTeamMembers: (teamId: string, updates: Partial<SalesTeam>) => void;
+  updateTeamRoster: (teamId: string, members: TeamMember[]) => boolean;
   markNotificationRead: (id: string) => void;
   clearAllNotifications: () => void;
 }
@@ -1002,6 +1003,16 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
+    // TL can ONLY update targets of already assigned members — strictly cannot add or remove members!
+    if (!isSuperAdmin) {
+      const existingIds = (team.members || []).map((m) => m.id).sort().join(',');
+      const newIds = members.map((m) => m.id).sort().join(',');
+      if (existingIds !== newIds) {
+        alert('Access Denied: Only Super Admin can decide who is added or removed from this team. TL can only set individual targets.');
+        return false;
+      }
+    }
+
     if (members.length > 5) {
       alert('Limit Exceeded: A team can have a maximum of 5 members under the TL.');
       return false;
@@ -1040,12 +1051,63 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const updateTeamRoster = (teamId: string, members: TeamMember[]): boolean => {
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      alert('Access Denied: Only Super Admin can decide which members (BDE/BDM) are added or removed from this team.');
+      return false;
+    }
+
+    const team = teams.find((t) => t.id === teamId);
+    if (!team) return false;
+
+    if (members.length > 5) {
+      alert('Limit Exceeded: A team can have a maximum of 5 members under the TL.');
+      return false;
+    }
+
+    const bdmMembers = members.filter((m) => m.role === 'BDM');
+    const bdeMembers = members.filter((m) => m.role === 'BDE');
+
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId
+          ? {
+              ...t,
+              members,
+              bdmIds: bdmMembers.map((m) => m.id),
+              bdmNames: bdmMembers.map((m) => m.name),
+              bdeIds: bdeMembers.map((m) => m.id),
+              bdeNames: bdeMembers.map((m) => m.name)
+            }
+          : t
+      )
+    );
+    dbUpdateTeam(teamId, {
+      members,
+      bdmIds: bdmMembers.map((m) => m.id),
+      bdmNames: bdmMembers.map((m) => m.name),
+      bdeIds: bdeMembers.map((m) => m.id),
+      bdeNames: bdeMembers.map((m) => m.name)
+    });
+    addAuditLog(
+      'Team Roster Updated',
+      'Team Hierarchy',
+      teamId,
+      `${currentUser.name} (Super Admin) updated member roster for team "${team.name}" (${members.length} members assigned)`
+    );
+    return true;
+  };
+
   const updateTeamMembers = (teamId: string, updates: Partial<SalesTeam>) => {
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      alert('Access Denied: Only Super Admin has authority to modify team structure.');
+      return;
+    }
     setTeams((prev) =>
       prev.map((t) => (t.id === teamId ? { ...t, ...updates } : t))
     );
     dbUpdateTeam(teamId, updates);
-    addAuditLog('Sales Team Updated', 'Team Management', teamId, `${currentUser.name} updated structure for team ID ${teamId}`);
+    addAuditLog('Sales Team Updated', 'Team Management', teamId, `${currentUser.name} (Super Admin) updated structure for team ID ${teamId}`);
   };
 
   const addUser = (userData: Omit<UserProfile, 'id' | 'createdDate' | 'lastLogin'>) => {
@@ -1658,6 +1720,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         updateTeamTarget,
         updateMemberTargets,
         updateTeamMembers,
+        updateTeamRoster,
         markNotificationRead,
         clearAllNotifications
       }}

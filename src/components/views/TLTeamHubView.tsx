@@ -31,7 +31,8 @@ import {
   Eye,
   BookmarkCheck,
   MapPin,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 
 export default function TLTeamHubView() {
@@ -207,6 +208,25 @@ export default function TLTeamHubView() {
       prev.map((m) => ({
         ...m,
         targetRevenue: split
+      }))
+    );
+  };
+
+  // Distribute with BDM Priority (+25% higher quota for BDMs, remainder for BDEs)
+  const handleBDMPriority = () => {
+    if (editingMembers.length === 0) return;
+    const bdmCount = editingMembers.filter((m) => m.role === 'BDM').length;
+    const bdeCount = editingMembers.filter((m) => m.role === 'BDE').length;
+    if (bdmCount === 0 || bdeCount === 0) {
+      handleDistributeEvenly();
+      return;
+    }
+    const x = Math.round(teamTarget / (bdmCount * 1.25 + bdeCount));
+    const bdmQuota = Math.round(x * 1.25);
+    setEditingMembers((prev) =>
+      prev.map((m) => ({
+        ...m,
+        targetRevenue: m.role === 'BDM' ? bdmQuota : x
       }))
     );
   };
@@ -1028,9 +1048,14 @@ export default function TLTeamHubView() {
             <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Sliders className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                  Allocate Targets to 5 Team Members
-                </h3>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    Allocate Targets per BDE &amp; BDM
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Team Leader Quota Control • Set individual quotas per member
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setIsTargetModalOpen(false)}
@@ -1040,56 +1065,91 @@ export default function TLTeamHubView() {
               </button>
             </div>
 
+            {/* Super Admin Roster Lock Notice */}
+            <div className="mt-3.5 p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 dark:bg-amber-950/40 dark:border-amber-900/60 dark:text-amber-200 flex items-start gap-2.5">
+              <Lock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block">Team Roster Controlled Strictly by Super Admin</strong>
+                <p className="text-[11px] mt-0.5 text-amber-800/90 dark:text-amber-300/80">
+                  Who is added or removed from this team is decided solely by Super Admin. As Team Leader, you set individual monthly revenue targets for each BDE and BDM below.
+                </p>
+              </div>
+            </div>
+
             <form onSubmit={handleSaveMemberTargets} className="mt-4 space-y-4">
-              {/* Context Summary */}
-              <div className="flex items-center justify-between rounded-xl bg-indigo-50/80 p-3 text-xs dark:bg-indigo-950/40">
-                <div>
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">
-                    Super Admin Team Quota
-                  </span>
-                  <span className="font-black text-slate-900 dark:text-white text-sm">
-                    {formatCurrency(teamTarget)}
-                  </span>
+              {/* Context Summary & Quick Presets */}
+              <div className="rounded-xl bg-indigo-50/80 p-3 text-xs dark:bg-indigo-950/40 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">
+                      Super Admin Team Quota
+                    </span>
+                    <span className="font-black text-slate-900 dark:text-white text-sm">
+                      {formatCurrency(teamTarget)}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">
+                      Total Allocated Quota
+                    </span>
+                    <span
+                      className={`font-black text-sm ${
+                        totalEditingAllocated === teamTarget
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : totalEditingAllocated > teamTarget
+                          ? 'text-rose-500'
+                          : 'text-amber-500'
+                      }`}
+                    >
+                      {formatCurrency(totalEditingAllocated)}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">
-                    Sum of Member Allocations
-                  </span>
-                  <span
-                    className={`font-black text-sm ${
-                      totalEditingAllocated === teamTarget
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : totalEditingAllocated > teamTarget
-                        ? 'text-rose-500'
-                        : 'text-amber-500'
-                    }`}
+
+                <div className="flex items-center gap-2 pt-2 border-t border-indigo-100 dark:border-indigo-900/60">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Quick Presets:</span>
+                  <button
+                    type="button"
+                    onClick={handleDistributeEvenly}
+                    className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-700 shadow-2xs border border-indigo-200 hover:bg-indigo-50 dark:bg-slate-800 dark:text-indigo-300 dark:border-indigo-800 cursor-pointer"
                   >
-                    {formatCurrency(totalEditingAllocated)}
-                  </span>
+                    Distribute Evenly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBDMPriority}
+                    className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold text-blue-700 shadow-2xs border border-blue-200 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-300 dark:border-blue-800 cursor-pointer"
+                  >
+                    BDM Priority (+25%)
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleDistributeEvenly}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 shadow-xs"
-                >
-                  Distribute Evenly (₹{Math.round(teamTarget / (editingMembers.length || 1)).toLocaleString()})
-                </button>
               </div>
 
               {/* Members Input List */}
-              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
                 {editingMembers.map((m) => (
                   <div
                     key={m.id}
                     className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/40"
                   >
-                    <div>
-                      <h5 className="font-bold text-xs text-slate-900 dark:text-white">
-                        {m.name}
-                      </h5>
-                      <span className="text-[10px] text-slate-500">
-                        {m.role} • Current Achieved: ₹{(m.achievedRevenue || 0).toLocaleString()}
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                          m.role === 'BDM'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                            : 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                        }`}
+                      >
+                        {m.role}
                       </span>
+                      <div>
+                        <h5 className="font-bold text-xs text-slate-900 dark:text-white">
+                          {m.name}
+                        </h5>
+                        <span className="text-[10px] text-slate-500">
+                          Achieved: ₹{(m.achievedRevenue || 0).toLocaleString()}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-1.5">
