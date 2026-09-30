@@ -46,6 +46,7 @@ function mapUserFromDb(row: any): UserProfile {
     id: row.id,
     name: row.name,
     email: row.email,
+    phone: row.phone || '',
     password: row.password || undefined,
     department: row.department || 'Sales',
     designation: row.designation || 'Staff',
@@ -766,6 +767,7 @@ export async function dbInsertUser(user: UserProfile) {
     id: user.id,
     name: user.name,
     email: user.email,
+    phone: user.phone || '',
     password: user.password || 'akash@802',
     department: user.department,
     designation: user.designation,
@@ -789,6 +791,9 @@ export async function dbInsertUser(user: UserProfile) {
 export async function dbUpdateUser(id: string, updates: Partial<UserProfile>) {
   const payload: any = {};
   if (updates.name !== undefined) payload.name = updates.name;
+  if (updates.email !== undefined) payload.email = updates.email;
+  if (updates.phone !== undefined) payload.phone = updates.phone;
+  if (updates.branch !== undefined) payload.branch = updates.branch;
   if (updates.department !== undefined) payload.department = updates.department;
   if (updates.designation !== undefined) payload.designation = updates.designation;
   if (updates.role !== undefined) payload.role = updates.role;

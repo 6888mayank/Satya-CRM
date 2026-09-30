@@ -53,6 +53,7 @@ export default function UserManagementView() {
   const [newRole, setNewRole] = useState<UserRole>('BDE');
   const [newBranch, setNewBranch] = useState<'ND1' | 'ND2'>('ND1');
   const [newPassword, setNewPassword] = useState('');
+  const [createUserError, setCreateUserError] = useState<string | null>(null);
 
   // Comprehensive Edit User state (Allows HR / CSO to edit any profile details)
   const [selectedUserForEdit, setSelectedUserForEdit] = useState<UserProfile | null>(null);
@@ -66,6 +67,7 @@ export default function UserManagementView() {
   const [editStatus, setEditStatus] = useState<'Active' | 'Inactive'>('Active');
   const [editPassword, setEditPassword] = useState('');
   const [editSuccessMsg, setEditSuccessMsg] = useState(false);
+  const [editUserError, setEditUserError] = useState<string | null>(null);
 
   // Authorization check: Super Admin, RM, HR, and Tech can access
   const isAuthorized =
@@ -104,7 +106,7 @@ export default function UserManagementView() {
     setEditName(u.name);
     setEditEmail(u.email);
     const matchingEmp = employees.find(
-      (e) => e.id === u.id || e.email.toLowerCase() === u.email.toLowerCase()
+      (e) => e.id === u.id || (e.name.toLowerCase() === u.name.toLowerCase() && e.email.toLowerCase() === u.email.toLowerCase())
     );
     setEditPhone(u.phone || matchingEmp?.phone || '');
     setEditDesignation(u.designation);
@@ -114,11 +116,31 @@ export default function UserManagementView() {
     setEditStatus(u.status);
     setEditPassword(u.password || '');
     setEditSuccessMsg(false);
+    setEditUserError(null);
   };
 
   const handleSaveUserEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUserForEdit) return;
+    setEditUserError(null);
+
+    const targetEmail = editEmail.trim().toLowerCase();
+    const targetPass = editPassword.trim() || selectedUserForEdit.password?.trim() || 'akash@802';
+
+    // Rule: Same Email ID allowed across multiple accounts, BUT passwords MUST be distinct
+    const duplicateCreds = users.some(
+      (u) =>
+        u.id !== selectedUserForEdit.id &&
+        u.email.trim().toLowerCase() === targetEmail &&
+        (u.password?.trim() || 'akash@802') === targetPass
+    );
+
+    if (duplicateCreds) {
+      setEditUserError(
+        `Duplicate Credentials: Another account already uses Email "${editEmail.trim()}" with this exact password. You can share the same Email ID, but passwords must be different (e.g. Mayank@123 vs Archit@123).`
+      );
+      return;
+    }
 
     updateUser(selectedUserForEdit.id, {
       name: editName.trim(),
@@ -136,16 +158,36 @@ export default function UserManagementView() {
     setTimeout(() => {
       setSelectedUserForEdit(null);
       setEditSuccessMsg(false);
+      setEditUserError(null);
     }, 900);
   };
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
+    setCreateUserError(null);
+
+    const targetEmail = newEmail.trim().toLowerCase();
+    const targetPass = newPassword.trim() || 'satya@123';
+
+    // Rule: Same Email ID allowed across multiple accounts, BUT passwords MUST be distinct
+    const duplicateCreds = users.some(
+      (u) =>
+        u.email.trim().toLowerCase() === targetEmail &&
+        (u.password?.trim() || 'akash@802') === targetPass
+    );
+
+    if (duplicateCreds) {
+      setCreateUserError(
+        `Duplicate Credentials: An account with Email "${newEmail.trim()}" already exists with this exact password. You can share the same Email ID, but each user must have a unique password (e.g. Mayank@123 vs Archit@123).`
+      );
+      return;
+    }
+
     addUser({
       name: newName.trim(),
       email: newEmail.trim(),
       phone: newPhone.trim() || '+91 98000 00000',
-      password: newPassword.trim() || 'satya@123',
+      password: targetPass,
       department: newDepartment,
       designation: newDesignation.trim() || `${newDepartment} Specialist`,
       role: newRole,
@@ -161,6 +203,7 @@ export default function UserManagementView() {
     setNewPhone('');
     setNewPassword('');
     setNewDesignation('');
+    setCreateUserError(null);
   };
 
   const rolesList: UserRole[] = [
@@ -274,7 +317,17 @@ export default function UserManagementView() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
                   {filteredUsers.map((u) => {
-                    const empPhone = u.phone || employees.find((e) => e.id === u.id || e.email.toLowerCase() === u.email.toLowerCase())?.phone;
+                    const empPhone =
+                      u.phone ||
+                      employees.find(
+                        (e) =>
+                          e.id === u.id ||
+                          (e.name.toLowerCase() === u.name.toLowerCase() &&
+                            e.email.toLowerCase() === u.email.toLowerCase())
+                      )?.phone;
+                    const isSharedEmail =
+                      users.filter((other) => other.email.toLowerCase() === u.email.toLowerCase()).length > 1;
+
                     return (
                       <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
                         <td className="py-3.5 px-4 flex items-center gap-2.5">
@@ -287,7 +340,18 @@ export default function UserManagementView() {
 
                         <td className="py-3.5 px-3">
                           <div className="flex flex-col">
-                            <span className="text-slate-800 dark:text-slate-200 font-medium">{u.email}</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-slate-800 dark:text-slate-200 font-medium">{u.email}</span>
+                              {isSharedEmail && (
+                                <span
+                                  className="inline-flex items-center gap-1 rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50"
+                                  title="Multiple accounts share this Email ID with distinct passwords"
+                                >
+                                  <Key className="h-2.5 w-2.5 text-amber-600" />
+                                  Shared ID
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                               <Phone className="h-2.5 w-2.5 text-indigo-500" />
                               {empPhone || '+91 98000 00000'}
@@ -436,13 +500,34 @@ export default function UserManagementView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white">Provision New User Account</h3>
-              <button onClick={() => setIsNewUserOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Provision New User Account</h3>
+                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">Shared Email ID allowed • Password must be unique</span>
+              </div>
+              <button onClick={() => { setIsNewUserOpen(false); setCreateUserError(null); }} className="text-slate-400 hover:text-slate-600">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateUser} className="mt-4 space-y-3.5 text-xs">
+            {/* Credential Policy Notice */}
+            <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/70 p-2.5 text-[11px] text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-200 flex items-start gap-2">
+              <Key className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Credential Policy</p>
+                <p className="text-[10px] text-indigo-700 dark:text-indigo-300 mt-0.5">
+                  Multiple users can share the same Email ID (e.g. <code>tl@satyasupport.co.in</code>), but <strong>passwords must be distinct</strong> for each user (e.g. <code>Mayank@123</code> vs <code>Archit@123</code>).
+                </p>
+              </div>
+            </div>
+
+            {createUserError && (
+              <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs font-bold text-rose-700 dark:bg-rose-950/60 dark:border-rose-900 dark:text-rose-300">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{createUserError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateUser} className="mt-3 space-y-3.5 text-xs">
               <div>
                 <label className="font-semibold text-slate-700 dark:text-slate-300">Full Name *</label>
                 <input
@@ -450,20 +535,23 @@ export default function UserManagementView() {
                   required
                   placeholder="e.g. Vikas Sharma"
                   value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  onChange={(e) => { setNewName(e.target.value); setCreateUserError(null); }}
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-700 dark:bg-slate-800"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 dark:text-slate-300">Email Address *</label>
+                <label className="font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Email Address (Login ID) *</span>
+                  <span className="text-[10px] text-slate-400">Can be shared with distinct pass</span>
+                </label>
                 <input
                   type="email"
                   required
-                  placeholder="vikas@crmsolutions.in"
+                  placeholder="e.g. tl@satyasupport.co.in"
                   value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+                  onChange={(e) => { setNewEmail(e.target.value); setCreateUserError(null); }}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs dark:border-slate-700 dark:bg-slate-800 font-mono"
                 />
               </div>
 
@@ -548,7 +636,7 @@ export default function UserManagementView() {
                   type="text"
                   placeholder="e.g. satya@123"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => { setNewPassword(e.target.value); setCreateUserError(null); }}
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-mono dark:border-slate-700 dark:bg-slate-800"
                 />
               </div>
@@ -596,7 +684,25 @@ export default function UserManagementView() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveUserEdit} className="mt-4 space-y-4 text-xs">
+            {/* Policy Info banner */}
+            <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/70 p-2.5 text-[11px] text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-200 flex items-start gap-2">
+              <Key className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Credential Policy: Shared Login ID Permitted</p>
+                <p className="text-[10px] text-indigo-700 dark:text-indigo-300 mt-0.5">
+                  Accounts may share the same Email ID (e.g. <code>tl@satyasupport.co.in</code>), but <strong>passwords must remain unique</strong> across accounts.
+                </p>
+              </div>
+            </div>
+
+            {editUserError && (
+              <div className="mt-2.5 flex items-start gap-2 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs font-bold text-rose-700 dark:bg-rose-950/60 dark:border-rose-900 dark:text-rose-300">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{editUserError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveUserEdit} className="mt-3 space-y-4 text-xs">
               {/* Full Name & Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -613,15 +719,16 @@ export default function UserManagementView() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300">
-                    Email Address (Mail ID) *
+                  <label className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span>Email Address (Mail ID) *</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Can be shared with diff pass</span>
                   </label>
                   <input
                     type="email"
                     required
                     value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    onChange={(e) => { setEditEmail(e.target.value); setEditUserError(null); }}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-mono font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -741,7 +848,7 @@ export default function UserManagementView() {
                   <input
                     type="text"
                     value={editPassword}
-                    onChange={(e) => setEditPassword(e.target.value)}
+                    onChange={(e) => { setEditPassword(e.target.value); setEditUserError(null); }}
                     placeholder="New password"
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs font-mono dark:border-slate-700 dark:bg-slate-800"
                   />

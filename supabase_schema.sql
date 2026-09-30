@@ -6,11 +6,17 @@
 -- Enable UUID extension if needed
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Migration: Drop single-column unique constraints on email to allow shared email IDs with distinct passwords
+ALTER TABLE IF EXISTS public.users DROP CONSTRAINT IF EXISTS users_email_key;
+ALTER TABLE IF EXISTS public.employees DROP CONSTRAINT IF EXISTS employees_email_key;
+ALTER TABLE IF EXISTS public.users ADD COLUMN IF NOT EXISTS phone TEXT;
+
 -- 1. USERS TABLE
 CREATE TABLE IF NOT EXISTS public.users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
   password TEXT DEFAULT 'akash@802',
   department TEXT,
   designation TEXT,
@@ -22,14 +28,15 @@ CREATE TABLE IF NOT EXISTS public.users (
   reporting_manager TEXT,
   permissions JSONB DEFAULT '[]'::jsonb,
   branch TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT unique_user_email_password UNIQUE (email, password)
 );
 
 -- 2. EMPLOYEES TABLE
 CREATE TABLE IF NOT EXISTS public.employees (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
   phone TEXT,
   department TEXT,
   designation TEXT,

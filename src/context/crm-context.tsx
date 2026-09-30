@@ -272,24 +272,41 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
 
-    // 1. Primary CRM Database (Supabase)
-    if (isSupabaseConfigured) {
-      const ping = await checkSupabaseConnection();
-      if (ping.connected) {
-        setDbProvider('supabase');
-      } else {
-        setIsDbConnected(false);
-        setDbProvider('none');
-        setIsDbLoading(false);
-        setDbError(ping.error || 'Cannot connect to Supabase endpoint.');
-        return;
+    // 1. Primary CRM Database (PostgreSQL / Supabase)
+    let connected = false;
+    let providerName: 'render' | 'supabase' | 'none' = 'none';
+
+    try {
+      const pgPing = await checkRenderPostgresConnection();
+      if (pgPing.connected) {
+        connected = true;
+        providerName = 'render';
       }
-    } else {
-      setIsDbConnected(false);
+    } catch {
+      // Fall through to Supabase
+    }
+
+    if (!connected && isSupabaseConfigured) {
+      try {
+        const ping = await checkSupabaseConnection();
+        if (ping.connected) {
+          connected = true;
+          providerName = 'supabase';
+        } else {
+          setDbError(ping.error || 'Cannot connect to Supabase endpoint.');
+        }
+      } catch (err: any) {
+        setDbError(err?.message || 'Supabase connection failure.');
+      }
+    }
+
+    if (connected) {
+      setDbProvider(providerName);
+    } else if (!isSupabaseConfigured) {
       setDbProvider('none');
-      setIsDbLoading(false);
-      setDbError('Supabase Anon Key is missing. Set NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local to activate live database sync.');
-      return;
+      setDbError(
+        'Database connection pending. Set NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local to activate live Supabase sync.'
+      );
     }
 
     const res = await fetchLiveCRMData();
@@ -317,9 +334,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
         const liveUsers = res.data.users;
         setUsers(liveUsers);
         setCurrentUser((prev) => {
-          const updated = liveUsers.find(
-            (u) => u.id === prev.id || u.email.toLowerCase() === prev.email.toLowerCase()
-          );
+          // Strictly match by user ID to prevent cross-account replacement when emails are shared
+          const updated = liveUsers.find((u) => u.id === prev.id);
           return updated || prev;
         });
       }
@@ -331,7 +347,13 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       setIsDbConnected(false);
-      setDbError(res.error || 'Failed to fetch live database records');
+      if (!isSupabaseConfigured && !connected) {
+        // Safe offline mode fallback
+        setIsDbConnected(true);
+        setDbError(null);
+      } else {
+        setDbError(res.error || 'Failed to fetch live database records');
+      }
     }
     setIsDbLoading(false);
   }, []);
@@ -342,11 +364,12 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       const savedAuth = localStorage.getItem('CRM_AUTH_SESSION_V1');
       if (savedAuth) {
         const parsed = JSON.parse(savedAuth);
-        if (parsed && (parsed.email || parsed.id)) {
+        if (parsed && (parsed.id || parsed.email)) {
+          // Strictly match parsed.id first so accounts sharing the same email ID are never mixed up
           const found = users.find(
             (u) =>
-              (parsed.email && u.email.toLowerCase() === parsed.email.toLowerCase()) ||
-              (parsed.id && u.id === parsed.id)
+              (parsed.id && u.id === parsed.id) ||
+              (!parsed.id && parsed.email && u.email.toLowerCase() === parsed.email.toLowerCase())
           );
           if (found) {
             setCurrentUser(found);
@@ -1111,14 +1134,33 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addUser = (userData: Omit<UserProfile, 'id' | 'createdDate' | 'lastLogin'>) => {
-    const userId = `u-${Date.now().toString().slice(-4)}`;
-    const empId = `e-${Date.now().toString().slice(-4)}`;
+    const enteredEmail = userData.email.trim().toLowerCase();
+    const enteredPass = (userData.password?.trim() || 'satya@123');
+
+    // Rule: Same Email ID allowed across multiple users, but passwords MUST be distinct
+    const duplicateCreds = users.some(
+      (u) =>
+        u.email.trim().toLowerCase() === enteredEmail &&
+        (u.password?.trim() || 'akash@802') === enteredPass
+    );
+
+    if (duplicateCreds) {
+      alert(
+        `Credential Conflict: An account with Email "${userData.email}" already exists with this exact password. You can share the same Email ID, but each user MUST have a unique, distinct password (e.g. Mayank@123 vs Archit@123).`
+      );
+      return;
+    }
+
+    const uniqueSuffix = `${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+    const userId = `u-${uniqueSuffix}`;
+    const empId = `e-${uniqueSuffix}`;
     const nowStr = new Date().toISOString().split('T')[0];
 
     const newUser: UserProfile = {
       ...userData,
       id: userId,
-      password: userData.password || 'satya@123',
+      phone: userData.phone || '+91 98000 00000',
+      password: enteredPass,
       createdDate: nowStr,
       lastLogin: 'Never logged in'
     };
@@ -1130,7 +1172,7 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       id: empId,
       name: userData.name,
       email: userData.email,
-      phone: '+91 98000 00000',
+      phone: userData.phone || '+91 98000 00000',
       department: userData.department,
       designation: userData.designation,
       role: userData.role,
@@ -1155,16 +1197,36 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = (userId: string, updates: Partial<UserProfile>) => {
     const target = users.find((u) => u.id === userId);
+    const targetEmail = (updates.email !== undefined ? updates.email : target?.email || '').trim().toLowerCase();
+    const targetPass = (updates.password !== undefined ? updates.password.trim() : (target?.password || 'akash@802')).trim();
+
+    // Rule: Same Email ID allowed across multiple users, but passwords MUST be distinct
+    const duplicateCreds = users.some(
+      (u) =>
+        u.id !== userId &&
+        u.email.trim().toLowerCase() === targetEmail &&
+        (u.password?.trim() || 'akash@802') === targetPass
+    );
+
+    if (duplicateCreds) {
+      alert(
+        `Credential Conflict: Another user account already uses Email "${targetEmail}" with this exact password. Passwords must be distinct when sharing an Email ID.`
+      );
+      return;
+    }
+
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...updates } : u)));
     dbUpdateUser(userId, updates);
 
-    // Sync with matching employee record
+    // Sync with matching employee record (match by id or exact match of both name AND previous email)
     setEmployees((prev) =>
       prev.map((e) => {
-        if (
+        const isMatchedEmp =
           e.id === userId ||
-          (target && (e.email.toLowerCase() === target.email.toLowerCase() || e.name.toLowerCase() === target.name.toLowerCase()))
-        ) {
+          e.id === `e-${userId.replace(/^u-/, '')}` ||
+          (target && e.name.toLowerCase() === target.name.toLowerCase() && e.email.toLowerCase() === target.email.toLowerCase());
+
+        if (isMatchedEmp) {
           return {
             ...e,
             ...(updates.name ? { name: updates.name } : {}),
@@ -1181,8 +1243,8 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
       })
     );
 
-    // Sync with active session if updating self
-    if (userId === currentUser.id || (target && currentUser.email.toLowerCase() === target.email.toLowerCase())) {
+    // Sync with active session strictly if updating self (match by user ID only, not email)
+    if (userId === currentUser.id) {
       setCurrentUser((prev) => ({
         ...prev,
         ...updates
@@ -1193,9 +1255,9 @@ export function CRMProvider({ children }: { children: React.ReactNode }) {
     if (target && (updates.name || updates.role || updates.email || updates.phone)) {
       setTeams((prev) =>
         prev.map((t) => {
-          const isTL = t.teamLeadId === userId || t.teamLeadName.toLowerCase() === target.name.toLowerCase();
+          const isTL = t.teamLeadId === userId || (t.teamLeadName.toLowerCase() === target.name.toLowerCase() && !t.teamLeadId);
           const updatedMembers = (t.members || []).map((m) => {
-            if (m.id === userId || m.name.toLowerCase() === target.name.toLowerCase()) {
+            if (m.id === userId || (m.name.toLowerCase() === target.name.toLowerCase() && m.email?.toLowerCase() === target.email.toLowerCase())) {
               return {
                 ...m,
                 name: updates.name || m.name,
